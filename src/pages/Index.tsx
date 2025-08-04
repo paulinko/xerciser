@@ -18,16 +18,6 @@ const Index = () => {
       workoutBackgroundClass
     )}>
       <WorkoutTimer />
-      <div className="absolute top-4 left-4">
-        <Link to="/credits">
-          <Button
-            variant="link"
-            className="text-primary hover:text-primary/80 flex items-center justify-center space-x-2"
-          >
-            <span>Credits</span>
-          </Button>
-        </Link>
-      </div>
     </div>
   );
 };

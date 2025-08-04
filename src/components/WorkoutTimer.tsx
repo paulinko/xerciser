@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Play, Pause, RotateCcw, SkipForward, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Link } from "react-router-dom"; // Import Link
 
 const WorkoutTimer: React.FC = () => {
   const {
@@ -62,10 +63,18 @@ const WorkoutTimer: React.FC = () => {
   return (
     <div className="flex flex-col items-center justify-center w-full h-full">
       <Card className="w-full max-w-md mx-auto shadow-lg rounded-xl overflow-hidden">
-        <CardHeader className="bg-primary text-primary-foreground py-4">
-          <CardTitle className="text-3xl font-extrabold text-center">
-            Fitness Pal
+        <CardHeader className="bg-primary text-primary-foreground py-4 flex flex-row items-center justify-between px-6">
+          <CardTitle className="text-3xl font-extrabold text-center flex-1">
+            Xercise
           </CardTitle>
+          <Link to="/credits">
+            <Button
+              variant="link"
+              className="text-primary-foreground hover:text-primary-foreground/80 text-sm"
+            >
+              Credits
+            </Button>
+          </Link>
         </CardHeader>
         <CardContent className="p-6 space-y-6">
           {showConfig ? (
