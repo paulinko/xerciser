@@ -10,8 +10,8 @@
     ]
   },
   {
-    "id": "preset-hiit-cardio",
-    "name": "HIIT Cardio Blast",
+    "id": "preset-arm-strong",
+    "name": "Arm strength",
     "exercises": [
       { "id": "preset-ex-2-1", "name": "High Knees", "sets": 4, "workDuration": 30, "restDuration": 10 },
       { "id": "preset-ex-2-2", "name": "Burpees", "sets": 3, "workDuration": 45, "restDuration": 20 },
