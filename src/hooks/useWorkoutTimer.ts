@@ -11,7 +11,7 @@ export interface Exercise {
 }
 
 export interface WorkoutSettings {
-  id: string; // Added ID for unique identification
+  id: string;
   name: string;
   exercises: Exercise[];
 }
@@ -24,7 +24,7 @@ interface WorkoutTimerState {
   isActive: boolean;
   isPaused: boolean;
   settings: WorkoutSettings;
-  savedWorkouts: WorkoutSettings[]; // New state for saved workouts
+  savedWorkouts: WorkoutSettings[];
 }
 
 const initialDefaultSettings: WorkoutSettings = presetWorkoutsData[0] || {
@@ -63,10 +63,20 @@ export const useWorkoutTimer = () => {
       }
     }
 
-    // Merge presets with saved workouts from local storage
-    const savedWorkoutIds = new Set(savedWorkoutsFromLS.map(w => w.id));
-    const uniquePresetWorkouts = presetWorkoutsData.filter(preset => !savedWorkoutIds.has(preset.id));
-    const allAvailableWorkouts = [...uniquePresetWorkouts, ...savedWorkoutsFromLS];
+    // Use a Map to merge presets and saved workouts, with saved workouts taking precedence
+    const allWorkoutsMap = new Map<string, WorkoutSettings>();
+
+    // Add presets first
+    presetWorkoutsData.forEach(workout => {
+      allWorkoutsMap.set(workout.id, workout);
+    });
+
+    // Add saved workouts, overwriting presets if IDs conflict
+    savedWorkoutsFromLS.forEach(workout => {
+      allWorkoutsMap.set(workout.id, workout);
+    });
+
+    const allAvailableWorkouts = Array.from(allWorkoutsMap.values());
 
     // Determine current settings
     if (typeof window !== 'undefined') {
@@ -176,10 +186,10 @@ export const useWorkoutTimer = () => {
     }
     const firstExercise = state.settings.exercises[0];
     setState(prevState => ({
-      ...getInitialState(),
-      settings: prevState.settings,
+      ...getInitialState(), // Re-initialize state including saved workouts from LS
+      settings: prevState.settings, // Keep current settings if they were explicitly set
       currentTime: firstExercise ? firstExercise.workDuration : 0,
-      savedWorkouts: prevState.savedWorkouts, // Preserve saved workouts on reset
+      // savedWorkouts will be reloaded by getInitialState
     }));
     setElapsedWorkoutTime(0);
   }, [state.settings, getInitialState]);
@@ -270,11 +280,16 @@ export const useWorkoutTimer = () => {
     }
     const newWorkout: WorkoutSettings = {
       ...state.settings,
-      id: `workout-${Date.now()}`,
+      id: `workout-${Date.now()}`, // Ensure unique ID for saved workouts
       name: workoutName,
     };
     setState(prevState => {
-      const updatedWorkouts = [...prevState.savedWorkouts, newWorkout];
+      // Use a Map to ensure uniqueness and prioritize the newly saved workout
+      const updatedWorkoutsMap = new Map<string, WorkoutSettings>();
+      prevState.savedWorkouts.forEach(w => updatedWorkoutsMap.set(w.id, w));
+      updatedWorkoutsMap.set(newWorkout.id, newWorkout); // Add/overwrite with the new workout
+
+      const updatedWorkouts = Array.from(updatedWorkoutsMap.values());
       return { ...prevState, savedWorkouts: updatedWorkouts };
     });
     toast.success(`Workout "${workoutName}" saved!`);
