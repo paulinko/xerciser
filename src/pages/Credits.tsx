@@ -83,7 +83,7 @@ const Credits = () => {
             href="https://github.com/paulinko/xerciser"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-secondary hover:underline"
+            className="text-primary hover:underline"
           >
             GitHub
           </a>
