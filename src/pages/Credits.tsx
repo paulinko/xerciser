@@ -77,7 +77,7 @@ const Credits = () => {
         <p className="text-lg text-center mt-6 font-semibold">
           Created with Dyad and Gemini
         </p>
-        <p className="text-lg text-center mt-2 font-semibold">
+        <p className="text-lg text-center mt-2 ">
           Check out the project on{" "}
           <a
             href="https://github.com/paulinko/xerciser"
