@@ -3,10 +3,10 @@ import { useWorkoutTimer } from "@/hooks/useWorkoutTimer";
 import { WorkoutEditor } from "./WorkoutEditor";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Play, Pause, RotateCcw, SkipForward, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Link } from "react-router-dom"; // Import Link
+import { Link } from "react-router-dom";
+import { CustomProgressBar } from "./CustomProgressBar"; // Import the new CustomProgressBar
 
 const WorkoutTimer: React.FC = () => {
   const {
@@ -111,17 +111,19 @@ const WorkoutTimer: React.FC = () => {
 
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground text-left">Current Phase Progress</p>
-                <Progress
+                <CustomProgressBar
                   value={phaseProgressValue}
-                  className={cn("h-3 rounded-full", timerColorClass)}
+                  indicatorClassName={timerColorClass} // Apply color to indicator
+                  className="h-3 rounded-full" // Track styling (bg-muted is default in CustomProgressBar)
                 />
               </div>
 
               <div className="space-y-2 mt-4">
                 <p className="text-sm text-muted-foreground text-left">Overall Workout Progress</p>
-                <Progress
+                <CustomProgressBar
                   value={overallProgressValue}
-                  className="h-3 rounded-full bg-yellow-500"
+                  indicatorClassName="bg-yellow-500" // Apply color to indicator
+                  className="h-3 rounded-full" // Track styling (bg-muted is default in CustomProgressBar)
                 />
               </div>
 
