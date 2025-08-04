@@ -12,8 +12,8 @@ export const WorkoutHistoryDisplay: React.FC<WorkoutHistoryDisplayProps> = ({
   workoutHistory,
   currentStreak,
 }) => {
-  // Sort history by date in descending order
-  const sortedHistory = [...workoutHistory].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  // Ensure workoutHistory is an array before sorting
+  const sortedHistory = [...(workoutHistory || [])].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   return (
     <div className="space-y-6 p-4 bg-card rounded-lg shadow-md">
