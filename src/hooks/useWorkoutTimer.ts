@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
 
 interface WorkoutSettings {
+  name: string; // Added name field
   sets: number;
   workDuration: number; // in seconds
   restDuration: number; // in seconds
@@ -22,7 +23,7 @@ const initialState: WorkoutTimerState = {
   isWorking: true,
   isActive: false,
   isPaused: false,
-  settings: { sets: 3, workDuration: 60, restDuration: 30 }, // Default settings
+  settings: { name: "My Workout", sets: 3, workDuration: 60, restDuration: 30 }, // Default settings with a name
 };
 
 export const useWorkoutTimer = () => {
