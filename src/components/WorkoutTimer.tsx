@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Play, Pause, RotateCcw, SkipForward, Settings } from "lucide-react";
+import { cn } from "@/lib/utils"; // Import cn for conditional class names
 
 const WorkoutTimer: React.FC = () => {
   const {
@@ -21,8 +22,8 @@ const WorkoutTimer: React.FC = () => {
     reset,
     skip,
     currentExercise,
-    totalWorkoutDuration, // New
-    elapsedWorkoutTime,   // New
+    totalWorkoutDuration,
+    elapsedWorkoutTime,
   } = useWorkoutTimer();
 
   const [showConfig, setShowConfig] = useState(true);
@@ -45,16 +46,24 @@ const WorkoutTimer: React.FC = () => {
     return `${minutes.toString().padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
+  // Dynamic classes based on workout stage
   const timerColorClass = isWorking
-    ? "bg-green-500"
-    : "bg-blue-500";
+    ? "bg-ut-orange-500" // Orange for work
+    : "bg-prussian-blue-500"; // Blue for rest
 
   const textColorClass = isWorking
-    ? "text-green-600 dark:text-green-400"
-    : "text-blue-600 dark:text-blue-400";
+    ? "text-ut-orange-500" // Orange text for work
+    : "text-prussian-blue-500"; // Blue text for rest
+
+  const workoutBackgroundClass = isWorking
+    ? "bg-ut-orange-900 dark:bg-ut-orange-100" // Light orange for light mode, dark orange for dark mode
+    : "bg-sky-blue-900 dark:bg-prussian-blue-100"; // Light blue for light mode, dark blue for dark mode
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
+    <div className={cn(
+      "flex flex-col items-center justify-center min-h-screen p-4 transition-colors duration-500",
+      workoutBackgroundClass
+    )}>
       <Card className="w-full max-w-md mx-auto shadow-lg rounded-xl overflow-hidden">
         <CardHeader className="bg-primary text-primary-foreground py-4">
           <CardTitle className="text-3xl font-extrabold text-center">
@@ -90,7 +99,7 @@ const WorkoutTimer: React.FC = () => {
                 <p className="text-sm text-muted-foreground text-left">Current Phase Progress</p>
                 <Progress
                   value={phaseProgressValue}
-                  className={`h-3 rounded-full ${timerColorClass}`}
+                  className={cn("h-3 rounded-full", timerColorClass)}
                 />
               </div>
 
@@ -98,7 +107,7 @@ const WorkoutTimer: React.FC = () => {
                 <p className="text-sm text-muted-foreground text-left">Overall Workout Progress</p>
                 <Progress
                   value={overallProgressValue}
-                  className="h-3 rounded-full bg-purple-500" // Distinct color for overall progress
+                  className="h-3 rounded-full bg-selective-yellow-500" // Distinct color for overall progress
                 />
               </div>
 
@@ -107,7 +116,7 @@ const WorkoutTimer: React.FC = () => {
                 {!isActive || isPaused ? (
                   <Button
                     onClick={start}
-                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-full text-lg font-semibold flex items-center space-x-2"
+                    className="bg-ut-orange-600 hover:bg-ut-orange-700 text-white px-6 py-3 rounded-full text-lg font-semibold flex items-center space-x-2"
                   >
                     <Play size={24} />
                     <span>Start</span>
@@ -115,7 +124,7 @@ const WorkoutTimer: React.FC = () => {
                 ) : (
                   <Button
                     onClick={pause}
-                    className="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-3 rounded-full text-lg font-semibold flex items-center space-x-2"
+                    className="bg-prussian-blue-600 hover:bg-prussian-blue-700 text-white px-6 py-3 rounded-full text-lg font-semibold flex items-center space-x-2"
                   >
                     <Pause size={24} />
                     <span>Pause</span>
@@ -124,7 +133,7 @@ const WorkoutTimer: React.FC = () => {
                 <Button
                   onClick={reset}
                   variant="outline"
-                  className="border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800 px-6 py-3 rounded-full text-lg font-semibold flex items-center space-x-2"
+                  className="border-prussian-blue-300 text-prussian-blue-700 hover:bg-prussian-blue-100 dark:border-prussian-blue-700 dark:text-prussian-blue-300 dark:hover:bg-prussian-blue-800 px-6 py-3 rounded-full text-lg font-semibold flex items-center space-x-2"
                 >
                   <RotateCcw size={24} />
                   <span>Reset</span>
@@ -134,7 +143,7 @@ const WorkoutTimer: React.FC = () => {
                 <Button
                   onClick={skip}
                   variant="secondary"
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-full text-lg font-semibold flex items-center space-x-2"
+                  className="bg-blue-green-600 hover:bg-blue-green-700 text-white px-6 py-3 rounded-full text-lg font-semibold flex items-center space-x-2"
                 >
                   <SkipForward size={24} />
                   <span>Skip Phase</span>
