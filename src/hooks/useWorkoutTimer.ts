@@ -1,33 +1,31 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
 
-// New Exercise interface
 export interface Exercise {
-  id: string; // Unique ID for React keys and reordering
+  id: string;
   name: string;
   sets: number;
-  workDuration: number; // in seconds
-  restDuration: number; // in seconds
+  workDuration: number;
+  restDuration: number;
 }
 
-// Updated WorkoutSettings interface
 export interface WorkoutSettings {
   name: string;
-  exercises: Exercise[]; // Array of exercises
+  exercises: Exercise[];
 }
 
 interface WorkoutTimerState {
-  currentExerciseIndex: number; // Index of the current exercise in the array
-  currentExerciseSet: number; // Current set within the current exercise
+  currentExerciseIndex: number;
+  currentExerciseSet: number;
   currentTime: number;
-  isWorking: boolean; // true for work, false for rest
-  isActive: boolean; // true if timer is running or paused
+  isWorking: boolean;
+  isActive: boolean;
   isPaused: boolean;
   settings: WorkoutSettings;
 }
 
 const defaultExercise: Exercise = {
-  id: 'ex-1', // Initial ID
+  id: 'ex-1',
   name: "Warm-up",
   sets: 1,
   workDuration: 30,
@@ -37,25 +35,23 @@ const defaultExercise: Exercise = {
 const initialState: WorkoutTimerState = {
   currentExerciseIndex: 0,
   currentExerciseSet: 1,
-  currentTime: defaultExercise.workDuration, // Initial time from the first exercise
   isWorking: true,
   isActive: false,
   isPaused: false,
   settings: {
     name: "My Custom Workout",
-    exercises: [defaultExercise], // Start with one default exercise
+    exercises: [defaultExercise],
   },
+  currentTime: defaultExercise.workDuration,
 };
 
 export const useWorkoutTimer = () => {
   const [state, setState] = useState<WorkoutTimerState>(initialState);
   const intervalRef = useRef<number | null>(null);
 
-  // Helper to get current exercise
   const currentExercise = state.settings.exercises[state.currentExerciseIndex];
 
   const setSettings = useCallback((newSettings: WorkoutSettings) => {
-    // When settings change, reset the timer to the beginning of the first exercise
     const firstExercise = newSettings.exercises[0];
     setState(prevState => ({
       ...prevState,
@@ -65,7 +61,7 @@ export const useWorkoutTimer = () => {
       isWorking: true,
       isActive: false,
       isPaused: false,
-      currentTime: firstExercise ? firstExercise.workDuration : 0, // Handle empty exercises array
+      currentTime: firstExercise ? firstExercise.workDuration : 0,
     }));
   }, []);
 
@@ -105,7 +101,7 @@ export const useWorkoutTimer = () => {
     const firstExercise = state.settings.exercises[0];
     setState(prevState => ({
       ...initialState,
-      settings: prevState.settings, // Keep current settings
+      settings: prevState.settings,
       currentTime: firstExercise ? firstExercise.workDuration : 0,
     }));
     toast.info("Workout reset.");
@@ -123,52 +119,49 @@ export const useWorkoutTimer = () => {
       let nextCurrentExerciseSet = prevState.currentExerciseSet;
       let nextIsWorking = prevState.isWorking;
       let nextTime = 0;
+      let workoutFinished = false;
 
       if (prevState.isWorking) {
-        // Currently working, try to move to rest or next set/exercise
         if (prevState.currentExerciseSet < currentEx.sets) {
-          // Move to rest for current exercise
           nextIsWorking = false;
           nextTime = currentEx.restDuration;
           toast.info(`Skipped to Rest for ${currentEx.name}, Set ${nextCurrentExerciseSet}`);
         } else {
-          // Finished all sets for current exercise, move to next exercise
           nextCurrentExerciseIndex++;
           if (nextCurrentExerciseIndex < prevState.settings.exercises.length) {
             const nextEx = prevState.settings.exercises[nextCurrentExerciseIndex];
-            nextCurrentExerciseSet = 1; // Reset set count for new exercise
+            nextCurrentExerciseSet = 1;
             nextIsWorking = true;
             nextTime = nextEx.workDuration;
             toast.info(`Skipped to ${nextEx.name}, Set ${nextCurrentExerciseSet}`);
           } else {
-            // All exercises completed
+            workoutFinished = true;
             toast.success("Workout completed!");
-            return { ...initialState, settings: prevState.settings, currentTime: prevState.settings.exercises[0]?.workDuration || 0 };
           }
         }
       } else {
-        // Currently resting, move to next work period (next set or next exercise)
         nextCurrentExerciseSet++;
         nextIsWorking = true;
         if (nextCurrentExerciseSet <= currentEx.sets) {
-          // Move to next set of current exercise
           nextTime = currentEx.workDuration;
           toast.info(`Skipped to ${currentEx.name}, Set ${nextCurrentExerciseSet}`);
         } else {
-          // Finished all sets and rest for current exercise, move to next exercise
           nextCurrentExerciseIndex++;
           if (nextCurrentExerciseIndex < prevState.settings.exercises.length) {
             const nextEx = prevState.settings.exercises[nextCurrentExerciseIndex];
-            nextCurrentExerciseSet = 1; // Reset set count for new exercise
+            nextCurrentExerciseSet = 1;
             nextIsWorking = true;
             nextTime = nextEx.workDuration;
             toast.info(`Skipped to ${nextEx.name}, Set ${nextCurrentExerciseSet}`);
           } else {
-            // All exercises completed
+            workoutFinished = true;
             toast.success("Workout completed!");
-            return { ...initialState, settings: prevState.settings, currentTime: prevState.settings.exercises[0]?.workDuration || 0 };
           }
         }
+      }
+
+      if (workoutFinished) {
+        return { ...initialState, settings: prevState.settings, currentTime: prevState.settings.exercises[0]?.workDuration || 0 };
       }
 
       return {
@@ -183,11 +176,9 @@ export const useWorkoutTimer = () => {
   }, [state.settings.exercises]);
 
   useEffect(() => {
-    if (!currentExercise) {
-      // No exercises defined, stop timer
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
+    if (!currentExercise && state.settings.exercises.length > 0) {
+      if (state.currentExerciseIndex >= state.settings.exercises.length) {
+        reset();
       }
       return;
     }
@@ -197,7 +188,6 @@ export const useWorkoutTimer = () => {
         setState(prevState => {
           const currentEx = prevState.settings.exercises[prevState.currentExerciseIndex];
           if (!currentEx) {
-            // Should not happen if check above is correct, but for safety
             if (intervalRef.current) clearInterval(intervalRef.current);
             intervalRef.current = null;
             return prevState;
@@ -206,11 +196,8 @@ export const useWorkoutTimer = () => {
           if (prevState.currentTime > 1) {
             return { ...prevState, currentTime: prevState.currentTime - 1 };
           } else {
-            // Time is up for current phase
             if (prevState.isWorking) {
-              // Finished work period for current set
               if (prevState.currentExerciseSet < currentEx.sets) {
-                // Move to rest period for current exercise
                 toast.info(`Set ${prevState.currentExerciseSet} of ${currentEx.name} complete! Time for rest.`);
                 return {
                   ...prevState,
@@ -218,7 +205,6 @@ export const useWorkoutTimer = () => {
                   currentTime: currentEx.restDuration,
                 };
               } else {
-                // Finished all sets for current exercise, move to next exercise
                 const nextExerciseIndex = prevState.currentExerciseIndex + 1;
                 if (nextExerciseIndex < prevState.settings.exercises.length) {
                   const nextEx = prevState.settings.exercises[nextExerciseIndex];
@@ -226,18 +212,16 @@ export const useWorkoutTimer = () => {
                   return {
                     ...prevState,
                     currentExerciseIndex: nextExerciseIndex,
-                    currentExerciseSet: 1, // Reset set count for new exercise
+                    currentExerciseSet: 1,
                     isWorking: true,
                     currentTime: nextEx.workDuration,
                   };
                 } else {
-                  // All exercises completed
                   toast.success("Workout completed!");
                   if (intervalRef.current) {
                     clearInterval(intervalRef.current);
                     intervalRef.current = null;
                   }
-                  // Reset to initial state but keep current settings
                   const firstExercise = prevState.settings.exercises[0];
                   return {
                     ...initialState,
@@ -247,7 +231,6 @@ export const useWorkoutTimer = () => {
                 }
               }
             } else {
-              // Finished rest period, move to next work period (next set)
               toast.info(`Rest complete! Starting Set ${prevState.currentExerciseSet + 1} of ${currentEx.name}.`);
               return {
                 ...prevState,
@@ -271,7 +254,7 @@ export const useWorkoutTimer = () => {
         clearInterval(intervalRef.current);
       }
     };
-  }, [state.isActive, state.isPaused, state.currentTime, state.isWorking, state.currentExerciseIndex, state.currentExerciseSet, state.settings.exercises, currentExercise]);
+  }, [state.isActive, state.isPaused, state.currentTime, state.isWorking, state.currentExerciseIndex, state.currentExerciseSet, state.settings.exercises, currentExercise, reset]);
 
   return {
     ...state,
@@ -280,6 +263,6 @@ export const useWorkoutTimer = () => {
     pause,
     reset,
     skip,
-    currentExercise, // Expose current exercise for display
+    currentExercise,
   };
 };

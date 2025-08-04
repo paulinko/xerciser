@@ -1,14 +1,15 @@
 import React, { useState } from "react";
 import { useWorkoutTimer } from "@/hooks/useWorkoutTimer";
-import { WorkoutConfigForm } from "./WorkoutConfigForm";
+import { WorkoutEditor } from "./WorkoutEditor";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Play, Pause, RotateCcw, SkipForward } from "lucide-react";
+import { Play, Pause, RotateCcw, SkipForward, Settings } from "lucide-react";
 
 const WorkoutTimer: React.FC = () => {
   const {
-    currentSet,
+    currentExerciseIndex,
+    currentExerciseSet,
     currentTime,
     isWorking,
     isActive,
@@ -19,6 +20,7 @@ const WorkoutTimer: React.FC = () => {
     pause,
     reset,
     skip,
+    currentExercise,
   } = useWorkoutTimer();
 
   const [showConfig, setShowConfig] = useState(true);
@@ -28,8 +30,10 @@ const WorkoutTimer: React.FC = () => {
     setShowConfig(false);
   };
 
-  const totalDuration = isWorking ? settings.workDuration : settings.restDuration;
-  const progressValue = (currentTime / totalDuration) * 100;
+  const totalDuration = isWorking
+    ? currentExercise?.workDuration || 0
+    : currentExercise?.restDuration || 0;
+  const progressValue = totalDuration > 0 ? (currentTime / totalDuration) * 100 : 0;
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -38,8 +42,8 @@ const WorkoutTimer: React.FC = () => {
   };
 
   const timerColorClass = isWorking
-    ? "bg-green-500" // Work phase color
-    : "bg-blue-500"; // Rest phase color
+    ? "bg-green-500"
+    : "bg-blue-500";
 
   const textColorClass = isWorking
     ? "text-green-600 dark:text-green-400"
@@ -55,7 +59,7 @@ const WorkoutTimer: React.FC = () => {
         </CardHeader>
         <CardContent className="p-6 space-y-6">
           {showConfig ? (
-            <WorkoutConfigForm
+            <WorkoutEditor
               initialSettings={settings}
               onSave={handleSaveSettings}
             />
@@ -68,8 +72,13 @@ const WorkoutTimer: React.FC = () => {
                 <h3 className={`text-6xl font-bold ${textColorClass}`}>
                   {formatTime(currentTime)}
                 </h3>
-                <p className="text-2xl font-semibold text-foreground">
-                  Set {currentSet} / {settings.sets}
+                {currentExercise && (
+                  <p className="text-2xl font-semibold text-foreground">
+                    {currentExercise.name} - Set {currentExerciseSet} / {currentExercise.sets}
+                  </p>
+                )}
+                <p className="text-lg text-muted-foreground">
+                  Exercise {currentExerciseIndex + 1} / {settings.exercises.length}
                 </p>
               </div>
 
@@ -112,15 +121,16 @@ const WorkoutTimer: React.FC = () => {
                   className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-full text-lg font-semibold flex items-center space-x-2"
                 >
                   <SkipForward size={24} />
-                  <span>Skip</span>
+                  <span>Skip Phase</span>
                 </Button>
               </div>
               <Button
                 onClick={() => setShowConfig(true)}
                 variant="link"
-                className="w-full text-muted-foreground hover:text-foreground mt-4"
+                className="w-full text-muted-foreground hover:text-foreground mt-4 flex items-center justify-center space-x-2"
               >
-                Change Settings
+                <Settings size={20} />
+                <span>Change Workout Configuration</span>
               </Button>
             </>
           )}
