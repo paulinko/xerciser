@@ -22,7 +22,7 @@ const Index = () => {
         <Link to="/credits">
           <Button
             variant="link"
-            className="text-white hover:text-gray-200 flex items-center justify-center space-x-2"
+            className="text-primary hover:text-primary/80 flex items-center justify-center space-x-2"
           >
             <span>Credits</span>
           </Button>
