@@ -49,15 +49,15 @@ const WorkoutTimer: React.FC = () => {
   // Dynamic classes based on workout stage
   const timerColorClass = isWorking
     ? "bg-ut-orange-500" // Orange for work
-    : "bg-prussian-blue-500"; // Blue for rest
+    : "bg-sky-blue-500"; // Sky blue for rest
 
   const textColorClass = isWorking
     ? "text-ut-orange-500" // Orange text for work
-    : "text-prussian-blue-500"; // Blue text for rest
+    : "text-sky-blue-500"; // Sky blue text for rest
 
   const workoutBackgroundClass = isWorking
-    ? "bg-ut-orange-500" // Use a stronger orange for work background
-    : "bg-prussian-blue-500"; // Use a stronger blue for rest background
+    ? "bg-ut-orange-500" // Use ut_orange-500 for work background
+    : "bg-sky-blue-500"; // Use sky_blue-500 for rest background
 
   return (
     <div className={cn(
