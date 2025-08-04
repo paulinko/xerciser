@@ -32,36 +32,14 @@ const defaultExercise: Exercise = {
   restDuration: 15,
 };
 
-const initialState: WorkoutTimerState = {
-  currentExerciseIndex: 0,
-  currentExerciseSet: 1,
-  isWorking: true,
-  isActive: false,
-  isPaused: false,
-  settings: {
-    name: "My Custom Workout",
-    exercises: [defaultExercise],
-  },
-  currentTime: defaultExercise.workDuration,
+const initialDefaultSettings: WorkoutSettings = {
+  name: "My Custom Workout",
+  exercises: [defaultExercise],
 };
 
+const LOCAL_STORAGE_KEY = 'workoutSettings';
+
 export const useWorkoutTimer = () => {
-  const [state, setState] = useState<WorkoutTimerState>(initialState);
-  const [totalWorkoutDuration, setTotalWorkoutDuration] = useState(0);
-  const [elapsedWorkoutTime, setElapsedWorkoutTime] = useState(0);
-  const intervalRef = useRef<number | null>(null);
-
-  const currentExercise = state.settings.exercises[state.currentExerciseIndex];
-
-  // Sound effects
-  const workStartSound = useRef(typeof Audio !== 'undefined' ? new Audio('/sounds/work_start.mp3') : null);
-  const restStartSound = useRef(typeof Audio !== 'undefined' ? new Audio('/sounds/rest_start.mp3') : null); // Corrected typo here
-  const countdownBeepSound = useRef(typeof Audio !== 'undefined' ? new Audio('/sounds/countdown_beep.mp3') : null);
-  const workoutCompleteSound = useRef(typeof Audio !== 'undefined' ? new Audio('/sounds/workout_complete.mp3') : null);
-
-  // Store previous state to detect changes for sound effects
-  const prevStateRef = useRef<WorkoutTimerState | null>(null);
-
   const calculateTotalDuration = useCallback((exercises: Exercise[]) => {
     let total = 0;
     exercises.forEach(ex => {
@@ -72,6 +50,57 @@ export const useWorkoutTimer = () => {
     });
     return total;
   }, []);
+
+  const getInitialState = useCallback((): WorkoutTimerState => {
+    if (typeof window !== 'undefined') {
+      const storedSettings = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (storedSettings) {
+        try {
+          const parsedSettings: WorkoutSettings = JSON.parse(storedSettings);
+          const firstExercise = parsedSettings.exercises[0];
+          return {
+            currentExerciseIndex: 0,
+            currentExerciseSet: 1,
+            isWorking: true,
+            isActive: false,
+            isPaused: false,
+            settings: parsedSettings,
+            currentTime: firstExercise ? firstExercise.workDuration : 0,
+          };
+        } catch (error) {
+          console.error("Failed to parse stored workout settings:", error);
+          // Fallback to default if parsing fails
+        }
+      }
+    }
+    // Default initial state if no stored settings or parsing fails
+    const firstDefaultExercise = initialDefaultSettings.exercises[0];
+    return {
+      currentExerciseIndex: 0,
+      currentExerciseSet: 1,
+      isWorking: true,
+      isActive: false,
+      isPaused: false,
+      settings: initialDefaultSettings,
+      currentTime: firstDefaultExercise ? firstDefaultExercise.workDuration : 0,
+    };
+  }, []);
+
+  const [state, setState] = useState<WorkoutTimerState>(getInitialState);
+  const [totalWorkoutDuration, setTotalWorkoutDuration] = useState(0);
+  const [elapsedWorkoutTime, setElapsedWorkoutTime] = useState(0);
+  const intervalRef = useRef<number | null>(null);
+
+  const currentExercise = state.settings.exercises[state.currentExerciseIndex];
+
+  // Sound effects
+  const workStartSound = useRef(typeof Audio !== 'undefined' ? new Audio('/sounds/work_start.mp3') : null);
+  const restStartSound = useRef(typeof Audio !== 'undefined' ? new Audio('/sounds/rest_start.mp3') : null);
+  const countdownBeepSound = useRef(typeof Audio !== 'undefined' ? new Audio('/sounds/countdown_beep.mp3') : null);
+  const workoutCompleteSound = useRef(typeof Audio !== 'undefined' ? new Audio('/sounds/workout_complete.mp3') : null);
+
+  // Store previous state to detect changes for sound effects
+  const prevStateRef = useRef<WorkoutTimerState | null>(null);
 
   const setSettings = useCallback((newSettings: WorkoutSettings) => {
     const firstExercise = newSettings.exercises[0];
@@ -130,12 +159,12 @@ export const useWorkoutTimer = () => {
     }
     const firstExercise = state.settings.exercises[0];
     setState(prevState => ({
-      ...initialState,
-      settings: prevState.settings,
+      ...getInitialState(), // Use getInitialState to reset to stored or default
+      settings: prevState.settings, // Keep current settings
       currentTime: firstExercise ? firstExercise.workDuration : 0,
     }));
     setElapsedWorkoutTime(0); // Reset elapsed time
-  }, [state.settings]);
+  }, [state.settings, getInitialState]);
 
   const skip = useCallback(() => {
     setState(prevState => {
@@ -200,7 +229,8 @@ export const useWorkoutTimer = () => {
       }
 
       if (workoutFinished) {
-        return { ...initialState, settings: prevState.settings, currentTime: prevState.settings.exercises[0]?.workDuration || 0 };
+        const firstExercise = prevState.settings.exercises[0];
+        return { ...getInitialState(), settings: prevState.settings, currentTime: firstExercise ? firstExercise.workDuration : 0 };
       }
 
       return {
@@ -212,7 +242,7 @@ export const useWorkoutTimer = () => {
         isPaused: false,
       };
     });
-  }, [state.settings.exercises]);
+  }, [state.settings.exercises, getInitialState]);
 
   // Effect to initialize totalWorkoutDuration when component mounts or settings change
   useEffect(() => {
@@ -225,6 +255,13 @@ export const useWorkoutTimer = () => {
       countdownBeepSound.current?.play();
     }
   }, [state.currentTime, state.isActive, state.isPaused]);
+
+  // Effect to save settings to local storage whenever they change
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state.settings));
+    }
+  }, [state.settings]);
 
   // Main timer effect
   useEffect(() => {
@@ -286,8 +323,8 @@ export const useWorkoutTimer = () => {
                   }
                   const firstExercise = prevState.settings.exercises[0];
                   return {
-                    ...initialState,
-                    settings: prevState.settings,
+                    ...getInitialState(), // Use getInitialState to reset to stored or default
+                    settings: prevState.settings, // Keep current settings
                     currentTime: firstExercise ? firstExercise.workDuration : 0,
                   };
                 }
@@ -317,7 +354,7 @@ export const useWorkoutTimer = () => {
         clearInterval(intervalRef.current);
       }
     };
-  }, [state.isActive, state.isPaused, state.currentTime, state.isWorking, state.currentExerciseIndex, state.currentExerciseSet, state.settings.exercises, currentExercise, reset]);
+  }, [state.isActive, state.isPaused, state.currentTime, state.isWorking, state.currentExerciseIndex, state.currentExerciseSet, state.settings.exercises, currentExercise, reset, getInitialState]);
 
   return {
     ...state,
