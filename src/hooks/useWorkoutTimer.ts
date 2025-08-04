@@ -51,6 +51,15 @@ export const useWorkoutTimer = () => {
 
   const currentExercise = state.settings.exercises[state.currentExerciseIndex];
 
+  // Sound effects
+  const workStartSound = useRef(typeof Audio !== 'undefined' ? new Audio('/sounds/work_start.mp3') : null);
+  const restStartSound = useRef(typeof Audio !== 'undefined' ? new Audio('/sounds/rest_start.mp3') : null);
+  const countdownBeepSound = useRef(typeof Audio !== 'undefined' ? new Audio('/sounds/countdown_beep.mp3') : null);
+  const workoutCompleteSound = useRef(typeof Audio !== 'undefined' ? new Audio('/sounds/workout_complete.mp3') : null);
+
+  // Store previous state to detect changes for sound effects
+  const prevStateRef = useRef<WorkoutTimerState | null>(null);
+
   const setSettings = useCallback((newSettings: WorkoutSettings) => {
     const firstExercise = newSettings.exercises[0];
     setState(prevState => ({
@@ -80,6 +89,12 @@ export const useWorkoutTimer = () => {
           : currentExercise.restDuration,
       }));
       toast.success(`Workout "${state.settings.name}" started!`);
+      // Play initial work sound if starting in work phase
+      if (state.isWorking) {
+        workStartSound.current?.play();
+      } else {
+        restStartSound.current?.play();
+      }
     } else if (state.isPaused) {
       setState(prevState => ({ ...prevState, isPaused: false }));
       toast.info("Workout resumed!");
@@ -126,6 +141,7 @@ export const useWorkoutTimer = () => {
           nextIsWorking = false;
           nextTime = currentEx.restDuration;
           toast.info(`Skipped to Rest for ${currentEx.name}, Set ${nextCurrentExerciseSet}`);
+          restStartSound.current?.play(); // Play rest sound on skip
         } else {
           nextCurrentExerciseIndex++;
           if (nextCurrentExerciseIndex < prevState.settings.exercises.length) {
@@ -134,9 +150,11 @@ export const useWorkoutTimer = () => {
             nextIsWorking = true;
             nextTime = nextEx.workDuration;
             toast.info(`Skipped to ${nextEx.name}, Set ${nextCurrentExerciseSet}`);
+            workStartSound.current?.play(); // Play work sound on skip
           } else {
             workoutFinished = true;
             toast.success("Workout completed!");
+            workoutCompleteSound.current?.play(); // Play complete sound on skip
           }
         }
       } else {
@@ -145,6 +163,7 @@ export const useWorkoutTimer = () => {
         if (nextCurrentExerciseSet <= currentEx.sets) {
           nextTime = currentEx.workDuration;
           toast.info(`Skipped to ${currentEx.name}, Set ${nextCurrentExerciseSet}`);
+          workStartSound.current?.play(); // Play work sound on skip
         } else {
           nextCurrentExerciseIndex++;
           if (nextCurrentExerciseIndex < prevState.settings.exercises.length) {
@@ -153,9 +172,11 @@ export const useWorkoutTimer = () => {
             nextIsWorking = true;
             nextTime = nextEx.workDuration;
             toast.info(`Skipped to ${nextEx.name}, Set ${nextCurrentExerciseSet}`);
+            workStartSound.current?.play(); // Play work sound on skip
           } else {
             workoutFinished = true;
             toast.success("Workout completed!");
+            workoutCompleteSound.current?.play(); // Play complete sound on skip
           }
         }
       }
@@ -175,7 +196,18 @@ export const useWorkoutTimer = () => {
     });
   }, [state.settings.exercises]);
 
+  // Effect for playing countdown beep
   useEffect(() => {
+    if (state.isActive && !state.isPaused && state.currentTime > 0 && state.currentTime <= 3) {
+      countdownBeepSound.current?.play();
+    }
+  }, [state.currentTime, state.isActive, state.isPaused]);
+
+  // Main timer effect
+  useEffect(() => {
+    // Update previous state for next render's sound logic
+    prevStateRef.current = state;
+
     if (!currentExercise && state.settings.exercises.length > 0) {
       if (state.currentExerciseIndex >= state.settings.exercises.length) {
         reset();
@@ -196,9 +228,11 @@ export const useWorkoutTimer = () => {
           if (prevState.currentTime > 1) {
             return { ...prevState, currentTime: prevState.currentTime - 1 };
           } else {
+            // Time is 0, transition to next phase/set/exercise
             if (prevState.isWorking) {
               if (prevState.currentExerciseSet < currentEx.sets) {
                 toast.info(`Set ${prevState.currentExerciseSet} of ${currentEx.name} complete! Time for rest.`);
+                restStartSound.current?.play(); // Play rest sound
                 return {
                   ...prevState,
                   isWorking: false,
@@ -209,6 +243,7 @@ export const useWorkoutTimer = () => {
                 if (nextExerciseIndex < prevState.settings.exercises.length) {
                   const nextEx = prevState.settings.exercises[nextExerciseIndex];
                   toast.info(`Exercise "${currentEx.name}" complete! Starting "${nextEx.name}".`);
+                  workStartSound.current?.play(); // Play work sound
                   return {
                     ...prevState,
                     currentExerciseIndex: nextExerciseIndex,
@@ -218,6 +253,7 @@ export const useWorkoutTimer = () => {
                   };
                 } else {
                   toast.success("Workout completed!");
+                  workoutCompleteSound.current?.play(); // Play sound on workout completion
                   if (intervalRef.current) {
                     clearInterval(intervalRef.current);
                     intervalRef.current = null;
@@ -232,6 +268,7 @@ export const useWorkoutTimer = () => {
               }
             } else {
               toast.info(`Rest complete! Starting Set ${prevState.currentExerciseSet + 1} of ${currentEx.name}.`);
+              workStartSound.current?.play(); // Play work sound
               return {
                 ...prevState,
                 currentExerciseSet: prevState.currentExerciseSet + 1,
