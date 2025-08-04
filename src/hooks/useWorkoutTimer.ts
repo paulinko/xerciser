@@ -166,10 +166,10 @@ export const useWorkoutTimer = () => {
       toast.success(`Workout "${state.settings.name}" started!`);
       if (state.isWorking) {
         workStartSound.current?.play();
-        speak(`Starting workout. First exercise: ${currentExercise.name}, set ${state.currentExerciseSet}.`);
+        speak(`Workout started. First exercise: ${currentExercise.name}, set ${state.currentExerciseSet}.`);
       } else {
         restStartSound.current?.play();
-        speak(`Starting rest for ${currentExercise.name}, set ${state.currentExerciseSet}.`);
+        speak(`Rest for ${currentExercise.name}, set ${state.currentExerciseSet}.`);
       }
     } else if (state.isPaused) {
       setState(prevState => ({ ...prevState, isPaused: false }));
@@ -237,7 +237,7 @@ export const useWorkoutTimer = () => {
             nextCurrentExerciseSet = 1;
             nextIsWorking = true;
             nextTime = nextEx.workDuration;
-            announcement = `Skipped to ${nextEx.name}, Set ${nextCurrentExerciseSet}.`;
+            announcement = `${nextEx.name}, Set ${nextCurrentExerciseSet}.`;
             toast.info(announcement);
             workStartSound.current?.play();
           } else {
@@ -252,7 +252,7 @@ export const useWorkoutTimer = () => {
         nextIsWorking = true;
         if (nextCurrentExerciseSet <= currentEx.sets) {
           nextTime = currentEx.workDuration;
-          announcement = `Skipped to ${currentEx.name}, Set ${nextCurrentExerciseSet}.`;
+          announcement = `${currentEx.name}, Set ${nextCurrentExerciseSet}.`;
           toast.info(announcement);
           workStartSound.current?.play();
         } else {
@@ -262,7 +262,7 @@ export const useWorkoutTimer = () => {
             nextCurrentExerciseSet = 1;
             nextIsWorking = true;
             nextTime = nextEx.workDuration;
-            announcement = `Skipped to ${nextEx.name}, Set ${nextCurrentExerciseSet}.`;
+            announcement = `${nextEx.name}, Set ${nextCurrentExerciseSet}.`;
             toast.info(announcement);
             workStartSound.current?.play();
           } else {
@@ -414,7 +414,7 @@ export const useWorkoutTimer = () => {
                   const nextEx = prevState.settings.exercises[nextExerciseIndex];
                   toast.info(`Exercise "${currentEx.name}" complete! Starting "${nextEx.name}".`);
                   workStartSound.current?.play();
-                  speak(`Starting ${nextEx.name}, set 1.`);
+                  speak(`${nextEx.name}, set 1.`);
                   return {
                     ...prevState,
                     currentExerciseIndex: nextExerciseIndex,
@@ -445,7 +445,7 @@ export const useWorkoutTimer = () => {
             } else {
               toast.info(`Rest complete! Starting Set ${prevState.currentExerciseSet + 1} of ${currentEx.name}.`);
               workStartSound.current?.play();
-              speak(`Starting set ${prevState.currentExerciseSet + 1} of ${currentEx.name}.`);
+              speak(`Set ${prevState.currentExerciseSet + 1} of ${currentEx.name}.`);
               return {
                 ...prevState,
                 currentExerciseSet: prevState.currentExerciseSet + 1,
