@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Play, Pause, RotateCcw, SkipForward, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
+// Removed Link import as it's no longer needed here
 
 const WorkoutTimer: React.FC = () => {
   const {
@@ -159,14 +160,17 @@ const WorkoutTimer: React.FC = () => {
                   <span>Skip Phase</span>
                 </Button>
               </div>
-              <Button
-                onClick={() => setShowConfig(true)}
-                variant="link"
-                className="w-full text-muted-foreground hover:text-foreground mt-4 flex items-center justify-center space-x-2"
-              >
-                <Settings size={20} />
-                <span>Change Workout Configuration</span>
-              </Button>
+              <div className="flex justify-center mt-4">
+                <Button
+                  onClick={() => setShowConfig(true)}
+                  variant="link"
+                  className="text-muted-foreground hover:text-foreground flex items-center justify-center space-x-2"
+                >
+                  <Settings size={20} />
+                  <span>Change Workout Configuration</span>
+                </Button>
+                {/* Credits link removed from here */}
+              </div>
             </>
           )}
         </CardContent>
