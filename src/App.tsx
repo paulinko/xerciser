@@ -14,7 +14,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <BrowserRouter basename="/xerciser/"> {/* Added basename for GitHub Pages */}
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/credits" element={<Credits />} /> {/* Add the new Credits route */}
