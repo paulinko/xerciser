@@ -35,7 +35,8 @@
       { "id": "preset-ex-4-1", "name": "Squats", "sets": 3, "workDuration": 60, "restDuration": 15 },
       { "id": "preset-ex-4-2", "name": "Standing Cross Crunches", "sets": 1, "workDuration": 180, "restDuration": 10 },
       { "id": "preset-ex-4-3", "name": "Bird Dog", "sets": 4, "workDuration": 60, "restDuration": 20 },
-      { "id": "preset-ex-3-3", "name": "Bird Dog", "sets": 4, "workDuration": 60, "restDuration": 20 }
+      { "id": "preset-ex-4-4", "name": "Shoulder Bridge", "sets": 3, "workDuration": 60, "restDuration": 20 },
+      { "id": "preset-ex-4-5", "name": "Shoulder Bridge", "sets": 3, "workDuration": 60, "restDuration": 20 }
     ]
   }
 ]
