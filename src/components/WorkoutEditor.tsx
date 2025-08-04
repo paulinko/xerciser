@@ -5,31 +5,37 @@ import { Label } from "@/components/ui/label";
 import { Exercise, WorkoutSettings } from "@/hooks/useWorkoutTimer";
 import { ExerciseForm } from "./ExerciseForm";
 import { ExerciseCard } from "./ExerciseCard";
-import { PlusCircle, Library, Settings as SettingsIcon, Play } from "lucide-react";
+import { PlusCircle, Library, Settings as SettingsIcon, Play, History } from "lucide-react"; // Import History icon
 import { toast } from "sonner";
 import { WorkoutLibrary } from "./WorkoutLibrary";
+import { WorkoutHistoryDisplay } from "./WorkoutHistoryDisplay"; // Import new component
+import { WorkoutLogEntry } from "@/hooks/useWorkoutStreak"; // Import WorkoutLogEntry
 
 interface WorkoutEditorProps {
   initialSettings: WorkoutSettings;
-  onApplyAndStart: (settings: WorkoutSettings) => void; // New prop for applying and starting
+  onApplyAndStart: (settings: WorkoutSettings) => void;
   savedWorkouts: WorkoutSettings[];
   onSaveCurrentWorkout: (name: string, exercises: Exercise[]) => void;
   onLoadWorkout: (id: string) => void;
   onDeleteWorkout: (id: string) => void;
+  workoutHistory: WorkoutLogEntry[]; // New prop for workout history
+  currentStreak: number; // New prop for current streak
 }
 
 export const WorkoutEditor: React.FC<WorkoutEditorProps> = ({
   initialSettings,
-  onApplyAndStart, // Use the new prop
+  onApplyAndStart,
   savedWorkouts,
   onSaveCurrentWorkout,
   onLoadWorkout,
   onDeleteWorkout,
+  workoutHistory, // Destructure new prop
+  currentStreak, // Destructure new prop
 }) => {
   const [workoutName, setWorkoutName] = useState(initialSettings.name);
   const [exercises, setExercises] = useState<Exercise[]>(initialSettings.exercises);
   const [editingExerciseId, setEditingExerciseId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"editor" | "library">("editor");
+  const [activeTab, setActiveTab] = useState<"editor" | "library" | "history">("editor"); // Add 'history' tab
 
   // Update local state when initialSettings change (e.g., when a workout is loaded)
   React.useEffect(() => {
@@ -103,7 +109,7 @@ export const WorkoutEditor: React.FC<WorkoutEditorProps> = ({
 
   return (
     <div className="space-y-6 p-4 bg-card rounded-lg shadow-md">
-      <div className="flex justify-center space-x-4 mb-6">
+      <div className="flex justify-center space-x-2 mb-6"> {/* Adjusted space-x */}
         <Button
           variant={activeTab === "editor" ? "default" : "outline"}
           onClick={() => setActiveTab("editor")}
@@ -117,6 +123,13 @@ export const WorkoutEditor: React.FC<WorkoutEditorProps> = ({
           className="flex-1"
         >
           <Library size={20} className="mr-2" /> Library
+        </Button>
+        <Button
+          variant={activeTab === "history" ? "default" : "outline"}
+          onClick={() => setActiveTab("history")}
+          className="flex-1"
+        >
+          <History size={20} className="mr-2" /> History
         </Button>
       </div>
 
@@ -186,13 +199,18 @@ export const WorkoutEditor: React.FC<WorkoutEditorProps> = ({
             </div>
           )}
         </>
-      ) : (
+      ) : activeTab === "library" ? (
         <WorkoutLibrary
           savedWorkouts={savedWorkouts}
           onLoadWorkout={onLoadWorkout}
           onDeleteWorkout={onDeleteWorkout}
           onSaveCurrentWorkout={(name) => onSaveCurrentWorkout(name, exercises)}
           currentWorkoutName={workoutName}
+        />
+      ) : (
+        <WorkoutHistoryDisplay
+          workoutHistory={workoutHistory}
+          currentStreak={currentStreak}
         />
       )}
     </div>

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
 import presetWorkoutsData from '@/data/presetWorkouts.json';
-import { useSpeechSynthesis } from './useSpeechSynthesis'; // Import the new hook
+import { useSpeechSynthesis } from './useSpeechSynthesis';
+import { useWorkoutStreak } from './useWorkoutStreak'; // Import the new hook
 
 export interface Exercise {
   id: string;
@@ -38,7 +39,8 @@ const CURRENT_WORKOUT_SETTINGS_KEY = 'currentWorkoutSettings';
 const ALL_WORKOUTS_KEY = 'allWorkouts';
 
 export const useWorkoutTimer = () => {
-  const { speak } = useSpeechSynthesis(); // Initialize speech synthesis
+  const { speak } = useSpeechSynthesis();
+  const { currentStreak, workoutHistory, recordWorkoutCompletion } = useWorkoutStreak(); // Initialize and get streak data
 
   const calculateTotalDuration = useCallback((exercises: Exercise[]) => {
     let total = 0;
@@ -279,6 +281,7 @@ export const useWorkoutTimer = () => {
       }
 
       if (workoutFinished) {
+        recordWorkoutCompletion(prevState.settings); // Record workout completion
         const firstExercise = prevState.settings.exercises[0];
         return {
           ...prevState, // Keep current settings and saved workouts
@@ -300,7 +303,7 @@ export const useWorkoutTimer = () => {
         isPaused: false,
       };
     });
-  }, [state.settings.exercises, speak]);
+  }, [state.settings.exercises, speak, recordWorkoutCompletion]);
 
   // New functions for managing saved workouts
   const saveWorkout = useCallback((workoutName: string, exercisesToSave: Exercise[]) => {
@@ -426,6 +429,7 @@ export const useWorkoutTimer = () => {
                   toast.success("Workout completed!");
                   workoutCompleteSound.current?.play();
                   speak("Workout completed!");
+                  recordWorkoutCompletion(prevState.settings); // Record workout completion
                   if (intervalRef.current) {
                     clearInterval(intervalRef.current);
                     intervalRef.current = null;
@@ -467,7 +471,7 @@ export const useWorkoutTimer = () => {
         clearInterval(intervalRef.current);
       }
     };
-  }, [state.isActive, state.isPaused, state.currentTime, state.isWorking, state.currentExerciseIndex, state.currentExerciseSet, state.settings.exercises, currentExercise, reset, speak]);
+  }, [state.isActive, state.isPaused, state.currentTime, state.isWorking, state.currentExerciseIndex, state.currentExerciseSet, state.settings.exercises, currentExercise, reset, speak, recordWorkoutCompletion]);
 
   return {
     ...state,
@@ -482,5 +486,7 @@ export const useWorkoutTimer = () => {
     saveWorkout,
     loadWorkout,
     deleteWorkout,
+    currentStreak, // Expose currentStreak
+    workoutHistory, // Expose workoutHistory
   };
 };

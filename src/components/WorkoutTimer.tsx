@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Play, Pause, RotateCcw, SkipForward, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
-import { CustomProgressBar } from "./CustomProgressBar"; // Import the new CustomProgressBar
+import { CustomProgressBar } from "./CustomProgressBar";
 
 const WorkoutTimer: React.FC = () => {
   const {
@@ -29,6 +29,8 @@ const WorkoutTimer: React.FC = () => {
     saveWorkout,
     loadWorkout,
     deleteWorkout,
+    currentStreak, // Get currentStreak from useWorkoutTimer
+    workoutHistory, // Get workoutHistory from useWorkoutTimer
   } = useWorkoutTimer();
 
   const [showConfig, setShowConfig] = useState(true);
@@ -81,11 +83,13 @@ const WorkoutTimer: React.FC = () => {
           {showConfig ? (
             <WorkoutEditor
               initialSettings={settings}
-              onApplyAndStart={handleApplyAndStartWorkout} // Pass the new handler
+              onApplyAndStart={handleApplyAndStartWorkout}
               savedWorkouts={savedWorkouts}
               onSaveCurrentWorkout={saveWorkout}
               onLoadWorkout={loadWorkout}
               onDeleteWorkout={deleteWorkout}
+              workoutHistory={workoutHistory} // Pass workoutHistory
+              currentStreak={currentStreak} // Pass currentStreak
             />
           ) : (
             <>
@@ -107,14 +111,17 @@ const WorkoutTimer: React.FC = () => {
                 <p className="text-lg text-muted-foreground">
                   Workout Remaining: {formatTime(remainingWorkoutTime)}
                 </p>
+                <p className="text-lg font-semibold text-accent-foreground">
+                  Current Streak: <span className="text-primary">{currentStreak}</span> days
+                </p>
               </div>
 
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground text-left">Current Phase Progress</p>
                 <CustomProgressBar
                   value={phaseProgressValue}
-                  indicatorClassName={timerColorClass} // Apply color to indicator
-                  className="h-3 rounded-full" // Track styling (bg-muted is default in CustomProgressBar)
+                  indicatorClassName={timerColorClass}
+                  className="h-3 rounded-full"
                 />
               </div>
 
@@ -122,8 +129,8 @@ const WorkoutTimer: React.FC = () => {
                 <p className="text-sm text-muted-foreground text-left">Overall Workout Progress</p>
                 <CustomProgressBar
                   value={overallProgressValue}
-                  indicatorClassName="bg-yellow-500" // Apply color to indicator
-                  className="h-3 rounded-full" // Track styling (bg-muted is default in CustomProgressBar)
+                  indicatorClassName="bg-yellow-500"
+                  className="h-3 rounded-full"
                 />
               </div>
 
