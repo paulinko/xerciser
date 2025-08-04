@@ -55,7 +55,7 @@ export const useWorkoutTimer = () => {
 
   // Sound effects
   const workStartSound = useRef(typeof Audio !== 'undefined' ? new Audio('/sounds/work_start.mp3') : null);
-  const restStartSound = useRef(typeof Audio !== 'undefined' ? new Audio('/sounds/rest_start.mpd') : null);
+  const restStartSound = useRef(typeof Audio !== 'undefined' ? new Audio('/sounds/rest_start.mp3') : null); // Corrected typo here
   const countdownBeepSound = useRef(typeof Audio !== 'undefined' ? new Audio('/sounds/countdown_beep.mp3') : null);
   const workoutCompleteSound = useRef(typeof Audio !== 'undefined' ? new Audio('/sounds/workout_complete.mp3') : null);
 
