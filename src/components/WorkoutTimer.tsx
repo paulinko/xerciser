@@ -43,6 +43,7 @@ const WorkoutTimer: React.FC = () => {
   const phaseProgressValue = totalPhaseDuration > 0 ? (currentTime / totalPhaseDuration) * 100 : 0;
 
   const overallProgressValue = totalWorkoutDuration > 0 ? (elapsedWorkoutTime / totalWorkoutDuration) * 100 : 0;
+  const remainingWorkoutTime = totalWorkoutDuration - elapsedWorkoutTime;
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -99,6 +100,9 @@ const WorkoutTimer: React.FC = () => {
                 )}
                 <p className="text-lg text-muted-foreground">
                   Exercise {currentExerciseIndex + 1} / {settings.exercises.length}
+                </p>
+                <p className="text-lg text-muted-foreground">
+                  Workout Remaining: {formatTime(remainingWorkoutTime)}
                 </p>
               </div>
 
