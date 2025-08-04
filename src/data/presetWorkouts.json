@@ -1,0 +1,31 @@
+[
+  {
+    "id": "preset-full-body-beginner",
+    "name": "Beginner Full Body",
+    "exercises": [
+      { "id": "preset-ex-1-1", "name": "Jumping Jacks", "sets": 2, "workDuration": 45, "restDuration": 15 },
+      { "id": "preset-ex-1-2", "name": "Squats", "sets": 3, "workDuration": 60, "restDuration": 30 },
+      { "id": "preset-ex-1-3", "name": "Push-ups", "sets": 3, "workDuration": 45, "restDuration": 30 },
+      { "id": "preset-ex-1-4", "name": "Plank", "sets": 2, "workDuration": 60, "restDuration": 20 }
+    ]
+  },
+  {
+    "id": "preset-hiit-cardio",
+    "name": "HIIT Cardio Blast",
+    "exercises": [
+      { "id": "preset-ex-2-1", "name": "High Knees", "sets": 4, "workDuration": 30, "restDuration": 10 },
+      { "id": "preset-ex-2-2", "name": "Burpees", "sets": 3, "workDuration": 45, "restDuration": 20 },
+      { "id": "preset-ex-2-3", "name": "Mountain Climbers", "sets": 4, "workDuration": 30, "restDuration": 10 },
+      { "id": "preset-ex-2-4", "name": "Jump Squats", "sets": 3, "workDuration": 40, "restDuration": 20 }
+    ]
+  },
+  {
+    "id": "preset-core-strength",
+    "name": "Core Strength",
+    "exercises": [
+      { "id": "preset-ex-3-1", "name": "Crunches", "sets": 3, "workDuration": 45, "restDuration": 15 },
+      { "id": "preset-ex-3-2", "name": "Leg Raises", "sets": 3, "workDuration": 45, "restDuration": 15 },
+      { "id": "preset-ex-3-3", "name": "Russian Twists", "sets": 3, "workDuration": 60, "restDuration": 20 }
+    ]
+  }
+]

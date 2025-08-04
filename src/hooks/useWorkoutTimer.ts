@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
+import presetWorkoutsData from '@/data/presetWorkouts.json';
 
 export interface Exercise {
   id: string;
@@ -26,18 +27,10 @@ interface WorkoutTimerState {
   savedWorkouts: WorkoutSettings[]; // New state for saved workouts
 }
 
-const defaultExercise: Exercise = {
-  id: 'ex-1',
-  name: "Warm-up",
-  sets: 1,
-  workDuration: 30,
-  restDuration: 15,
-};
-
-const initialDefaultSettings: WorkoutSettings = {
-  id: 'default-workout', // Assign an ID to the default workout
+const initialDefaultSettings: WorkoutSettings = presetWorkoutsData[0] || {
+  id: 'default-workout',
   name: "My Custom Workout",
-  exercises: [defaultExercise],
+  exercises: [{ id: 'ex-1', name: "Warm-up", sets: 1, workDuration: 30, restDuration: 15 }],
 };
 
 const CURRENT_WORKOUT_SETTINGS_KEY = 'currentWorkoutSettings';
@@ -56,27 +49,46 @@ export const useWorkoutTimer = () => {
   }, []);
 
   const getInitialState = useCallback((): WorkoutTimerState => {
-    let currentSettings = initialDefaultSettings;
-    let savedWorkouts: WorkoutSettings[] = [];
+    let currentSettings: WorkoutSettings;
+    let savedWorkoutsFromLS: WorkoutSettings[] = [];
 
+    if (typeof window !== 'undefined') {
+      const storedAllWorkouts = localStorage.getItem(ALL_WORKOUTS_KEY);
+      if (storedAllWorkouts) {
+        try {
+          savedWorkoutsFromLS = JSON.parse(storedAllWorkouts);
+        } catch (error) {
+          console.error("Failed to parse stored all workouts:", error);
+        }
+      }
+    }
+
+    // Merge presets with saved workouts from local storage
+    const savedWorkoutIds = new Set(savedWorkoutsFromLS.map(w => w.id));
+    const uniquePresetWorkouts = presetWorkoutsData.filter(preset => !savedWorkoutIds.has(preset.id));
+    const allAvailableWorkouts = [...uniquePresetWorkouts, ...savedWorkoutsFromLS];
+
+    // Determine current settings
     if (typeof window !== 'undefined') {
       const storedCurrentSettings = localStorage.getItem(CURRENT_WORKOUT_SETTINGS_KEY);
       if (storedCurrentSettings) {
         try {
           currentSettings = JSON.parse(storedCurrentSettings);
+          // Ensure the loaded currentSettings is actually in allAvailableWorkouts,
+          // otherwise default to the first available workout.
+          if (!allAvailableWorkouts.some(w => w.id === currentSettings.id)) {
+            currentSettings = allAvailableWorkouts[0] || initialDefaultSettings;
+          }
         } catch (error) {
           console.error("Failed to parse stored current workout settings:", error);
+          currentSettings = allAvailableWorkouts[0] || initialDefaultSettings;
         }
+      } else {
+        currentSettings = allAvailableWorkouts[0] || initialDefaultSettings;
       }
-
-      const storedAllWorkouts = localStorage.getItem(ALL_WORKOUTS_KEY);
-      if (storedAllWorkouts) {
-        try {
-          savedWorkouts = JSON.parse(storedAllWorkouts);
-        } catch (error) {
-          console.error("Failed to parse stored all workouts:", error);
-        }
-      }
+    } else {
+      // For SSR or initial render without localStorage
+      currentSettings = allAvailableWorkouts[0] || initialDefaultSettings;
     }
 
     const firstExercise = currentSettings.exercises[0];
@@ -88,7 +100,7 @@ export const useWorkoutTimer = () => {
       isPaused: false,
       settings: currentSettings,
       currentTime: firstExercise ? firstExercise.workDuration : 0,
-      savedWorkouts: savedWorkouts,
+      savedWorkouts: allAvailableWorkouts,
     };
   }, []);
 
