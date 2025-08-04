@@ -158,10 +158,10 @@ export const useWorkoutTimer = () => {
     }
   }, [state.isSpeechEnabled, rawSpeak]);
 
-  const workStartSound = useRef(typeof Audio !== 'undefined' ? new Audio('/sounds/work_start.mp3') : null);
-  const restStartSound = useRef(typeof Audio !== 'undefined' ? new Audio('/sounds/rest_start.mp3') : null);
-  const countdownBeepSound = useRef(typeof Audio !== 'undefined' ? new Audio('/sounds/countdown_beep.mp3') : null);
-  const workoutCompleteSound = useRef(typeof Audio !== 'undefined' ? new Audio('/sounds/workout_complete.mp3') : null);
+  const workStartSound = useRef(typeof Audio !== 'undefined' ? new Audio(`${import.meta.env.BASE_URL}sounds/work_start.mp3`) : null);
+  const restStartSound = useRef(typeof Audio !== 'undefined' ? new Audio(`${import.meta.env.BASE_URL}sounds/rest_start.mp3`) : null);
+  const countdownBeepSound = useRef(typeof Audio !== 'undefined' ? new Audio(`${import.meta.env.BASE_URL}sounds/countdown_beep.mp3`) : null);
+  const workoutCompleteSound = useRef(typeof Audio !== 'undefined' ? new Audio(`${import.meta.env.BASE_URL}sounds/workout_complete.mp3`) : null);
 
   const setSettings = useCallback((newSettings: WorkoutSettings) => {
     const firstExercise = newSettings.exercises[0];
