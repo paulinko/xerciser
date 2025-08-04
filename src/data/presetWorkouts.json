@@ -30,11 +30,12 @@
   },
   {
     "id": "preset-back-strength",
-    "name": "Core Strength",
+    "name": "Back workout",
     "exercises": [
       { "id": "preset-ex-4-1", "name": "Squats", "sets": 3, "workDuration": 60, "restDuration": 15 },
       { "id": "preset-ex-4-2", "name": "Standing Cross Crunches", "sets": 1, "workDuration": 180, "restDuration": 10 },
-      { "id": "preset-ex-3-3", "name": "Russian Twists", "sets": 3, "workDuration": 60, "restDuration": 20 }
+      { "id": "preset-ex-4-3", "name": "Bird Dog", "sets": 4, "workDuration": 60, "restDuration": 20 },
+      { "id": "preset-ex-3-3", "name": "Bird Dog", "sets": 4, "workDuration": 60, "restDuration": 20 }
     ]
   }
 ]
