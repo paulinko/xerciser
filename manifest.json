@@ -1,6 +1,6 @@
 {
-  "name": "Xcersise Workout Timer",
-  "short_name": "Xcersise",
+  "name": "Xercise Workout Timer",
+  "short_name": "Xercise",
   "description": "A simple and effective workout timer PWA.",
   "start_url": "/xerciser",
   "display": "standalone",
