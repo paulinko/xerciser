@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
 import presetWorkoutsData from '@/data/presetWorkouts.json';
+import { useSpeechSynthesis } from './useSpeechSynthesis'; // Import the new hook
 
 export interface Exercise {
   id: string;
@@ -37,6 +38,8 @@ const CURRENT_WORKOUT_SETTINGS_KEY = 'currentWorkoutSettings';
 const ALL_WORKOUTS_KEY = 'allWorkouts';
 
 export const useWorkoutTimer = () => {
+  const { speak } = useSpeechSynthesis(); // Initialize speech synthesis
+
   const calculateTotalDuration = useCallback((exercises: Exercise[]) => {
     let total = 0;
     exercises.forEach(ex => {
@@ -127,7 +130,7 @@ export const useWorkoutTimer = () => {
   const countdownBeepSound = useRef(typeof Audio !== 'undefined' ? new Audio('/sounds/countdown_beep.mp3') : null);
   const workoutCompleteSound = useRef(typeof Audio !== 'undefined' ? new Audio('/sounds/workout_complete.mp3') : null);
 
-  // Store previous state to detect changes for sound effects
+  // Store previous state to detect changes for sound effects and speech
   const prevStateRef = useRef<WorkoutTimerState | null>(null);
 
   const setSettings = useCallback((newSettings: WorkoutSettings) => {
@@ -163,21 +166,25 @@ export const useWorkoutTimer = () => {
       toast.success(`Workout "${state.settings.name}" started!`);
       if (state.isWorking) {
         workStartSound.current?.play();
+        speak(`Starting workout. First exercise: ${currentExercise.name}, set ${state.currentExerciseSet}.`);
       } else {
         restStartSound.current?.play();
+        speak(`Starting rest for ${currentExercise.name}, set ${state.currentExerciseSet}.`);
       }
     } else if (state.isPaused) {
       setState(prevState => ({ ...prevState, isPaused: false }));
       toast.info("Workout resumed!");
+      speak("Workout resumed.");
     }
-  }, [state.isActive, state.isPaused, state.isWorking, currentExercise, state.settings.name]);
+  }, [state.isActive, state.isPaused, state.isWorking, currentExercise, state.settings.name, speak, state.currentExerciseSet]);
 
   const pause = useCallback(() => {
     if (state.isActive && !state.isPaused) {
       setState(prevState => ({ ...prevState, isPaused: true }));
       toast.info("Workout paused.");
+      speak("Workout paused.");
     }
-  }, [state.isActive, state.isPaused]);
+  }, [state.isActive, state.isPaused, speak]);
 
   const reset = useCallback(() => {
     if (intervalRef.current) {
@@ -195,7 +202,8 @@ export const useWorkoutTimer = () => {
       currentTime: firstExercise ? firstExercise.workDuration : 0,
     }));
     setElapsedWorkoutTime(0);
-  }, [state.settings]);
+    speak("Workout reset.");
+  }, [state.settings, speak]);
 
   const skip = useCallback(() => {
     setState(prevState => {
@@ -213,12 +221,14 @@ export const useWorkoutTimer = () => {
       let nextIsWorking = prevState.isWorking;
       let nextTime = 0;
       let workoutFinished = false;
+      let announcement = "";
 
       if (prevState.isWorking) {
         if (prevState.currentExerciseSet < currentEx.sets) {
           nextIsWorking = false;
           nextTime = currentEx.restDuration;
-          toast.info(`Skipped to Rest for ${currentEx.name}, Set ${nextCurrentExerciseSet}`);
+          announcement = `Skipped to Rest for ${currentEx.name}, Set ${nextCurrentExerciseSet}.`;
+          toast.info(announcement);
           restStartSound.current?.play();
         } else {
           nextCurrentExerciseIndex++;
@@ -227,11 +237,13 @@ export const useWorkoutTimer = () => {
             nextCurrentExerciseSet = 1;
             nextIsWorking = true;
             nextTime = nextEx.workDuration;
-            toast.info(`Skipped to ${nextEx.name}, Set ${nextCurrentExerciseSet}`);
+            announcement = `Skipped to ${nextEx.name}, Set ${nextCurrentExerciseSet}.`;
+            toast.info(announcement);
             workStartSound.current?.play();
           } else {
             workoutFinished = true;
-            toast.success("Workout completed!");
+            announcement = "Workout completed!";
+            toast.success(announcement);
             workoutCompleteSound.current?.play();
           }
         }
@@ -240,7 +252,8 @@ export const useWorkoutTimer = () => {
         nextIsWorking = true;
         if (nextCurrentExerciseSet <= currentEx.sets) {
           nextTime = currentEx.workDuration;
-          toast.info(`Skipped to ${currentEx.name}, Set ${nextCurrentExerciseSet}`);
+          announcement = `Skipped to ${currentEx.name}, Set ${nextCurrentExerciseSet}.`;
+          toast.info(announcement);
           workStartSound.current?.play();
         } else {
           nextCurrentExerciseIndex++;
@@ -249,14 +262,20 @@ export const useWorkoutTimer = () => {
             nextCurrentExerciseSet = 1;
             nextIsWorking = true;
             nextTime = nextEx.workDuration;
-            toast.info(`Skipped to ${nextEx.name}, Set ${nextCurrentExerciseSet}`);
+            announcement = `Skipped to ${nextEx.name}, Set ${nextCurrentExerciseSet}.`;
+            toast.info(announcement);
             workStartSound.current?.play();
           } else {
             workoutFinished = true;
-            toast.success("Workout completed!");
+            announcement = "Workout completed!";
+            toast.success(announcement);
             workoutCompleteSound.current?.play();
           }
         }
+      }
+
+      if (announcement) {
+        speak(announcement);
       }
 
       if (workoutFinished) {
@@ -281,7 +300,7 @@ export const useWorkoutTimer = () => {
         isPaused: false,
       };
     });
-  }, [state.settings.exercises]);
+  }, [state.settings.exercises, speak]);
 
   // New functions for managing saved workouts
   const saveWorkout = useCallback((workoutName: string, exercisesToSave: Exercise[]) => {
@@ -304,17 +323,19 @@ export const useWorkoutTimer = () => {
       return { ...prevState, savedWorkouts: updatedWorkouts };
     });
     toast.success(`Workout "${workoutName}" saved!`);
-  }, []);
+    speak(`Workout "${workoutName}" saved.`);
+  }, [speak]);
 
   const loadWorkout = useCallback((workoutId: string) => {
     const workoutToLoad = state.savedWorkouts.find(w => w.id === workoutId);
     if (workoutToLoad) {
       setSettings(workoutToLoad); // Use existing setSettings to update current workout
       toast.success(`Workout "${workoutToLoad.name}" loaded!`);
+      speak(`Workout "${workoutToLoad.name}" loaded.`);
     } else {
       toast.error("Workout not found.");
     }
-  }, [state.savedWorkouts, setSettings]);
+  }, [state.savedWorkouts, setSettings, speak]);
 
   const deleteWorkout = useCallback((workoutId: string) => {
     setState(prevState => {
@@ -322,7 +343,8 @@ export const useWorkoutTimer = () => {
       return { ...prevState, savedWorkouts: updatedWorkouts };
     });
     toast.success("Workout deleted.");
-  }, []);
+    speak("Workout deleted.");
+  }, [speak]);
 
   // Effect to initialize totalWorkoutDuration when component mounts or settings change
   useEffect(() => {
@@ -380,6 +402,7 @@ export const useWorkoutTimer = () => {
               if (prevState.currentExerciseSet < currentEx.sets) {
                 toast.info(`Set ${prevState.currentExerciseSet} of ${currentEx.name} complete! Time for rest.`);
                 restStartSound.current?.play();
+                speak(`Rest for ${currentEx.name}, set ${prevState.currentExerciseSet}.`);
                 return {
                   ...prevState,
                   isWorking: false,
@@ -391,6 +414,7 @@ export const useWorkoutTimer = () => {
                   const nextEx = prevState.settings.exercises[nextExerciseIndex];
                   toast.info(`Exercise "${currentEx.name}" complete! Starting "${nextEx.name}".`);
                   workStartSound.current?.play();
+                  speak(`Starting ${nextEx.name}, set 1.`);
                   return {
                     ...prevState,
                     currentExerciseIndex: nextExerciseIndex,
@@ -401,6 +425,7 @@ export const useWorkoutTimer = () => {
                 } else {
                   toast.success("Workout completed!");
                   workoutCompleteSound.current?.play();
+                  speak("Workout completed!");
                   if (intervalRef.current) {
                     clearInterval(intervalRef.current);
                     intervalRef.current = null;
@@ -420,6 +445,7 @@ export const useWorkoutTimer = () => {
             } else {
               toast.info(`Rest complete! Starting Set ${prevState.currentExerciseSet + 1} of ${currentEx.name}.`);
               workStartSound.current?.play();
+              speak(`Starting set ${prevState.currentExerciseSet + 1} of ${currentEx.name}.`);
               return {
                 ...prevState,
                 currentExerciseSet: prevState.currentExerciseSet + 1,
@@ -441,7 +467,7 @@ export const useWorkoutTimer = () => {
         clearInterval(intervalRef.current);
       }
     };
-  }, [state.isActive, state.isPaused, state.currentTime, state.isWorking, state.currentExerciseIndex, state.currentExerciseSet, state.settings.exercises, currentExercise, reset]);
+  }, [state.isActive, state.isPaused, state.currentTime, state.isWorking, state.currentExerciseIndex, state.currentExerciseSet, state.settings.exercises, currentExercise, reset, speak]);
 
   return {
     ...state,
