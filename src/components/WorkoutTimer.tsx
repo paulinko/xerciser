@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Play, Pause, RotateCcw, SkipForward, Settings } from "lucide-react";
-import { cn } from "@/lib/utils"; // Import cn for conditional class names
+import { cn } from "@/lib/utils";
 
 const WorkoutTimer: React.FC = () => {
   const {
@@ -24,6 +24,10 @@ const WorkoutTimer: React.FC = () => {
     currentExercise,
     totalWorkoutDuration,
     elapsedWorkoutTime,
+    savedWorkouts,
+    saveWorkout,
+    loadWorkout,
+    deleteWorkout,
   } = useWorkoutTimer();
 
   const [showConfig, setShowConfig] = useState(true);
@@ -46,18 +50,17 @@ const WorkoutTimer: React.FC = () => {
     return `${minutes.toString().padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
-  // Dynamic classes based on workout stage
   const timerColorClass = isWorking
-    ? "bg-red-500" // Red for work
-    : "bg-blue-500"; // Blue for rest
+    ? "bg-red-500"
+    : "bg-blue-500";
 
   const textColorClass = isWorking
-    ? "text-red-500" // Red text for work
-    : "text-blue-500"; // Blue text for rest
+    ? "text-red-500"
+    : "text-blue-500";
 
   const workoutBackgroundClass = isWorking
-    ? "bg-red-500" // Red for work background
-    : "bg-blue-500"; // Blue for rest background
+    ? "bg-red-500"
+    : "bg-blue-500";
 
   return (
     <div className={cn(
@@ -75,6 +78,10 @@ const WorkoutTimer: React.FC = () => {
             <WorkoutEditor
               initialSettings={settings}
               onSave={handleSaveSettings}
+              savedWorkouts={savedWorkouts}
+              onSaveCurrentWorkout={saveWorkout}
+              onLoadWorkout={loadWorkout}
+              onDeleteWorkout={deleteWorkout}
             />
           ) : (
             <>
@@ -107,7 +114,7 @@ const WorkoutTimer: React.FC = () => {
                 <p className="text-sm text-muted-foreground text-left">Overall Workout Progress</p>
                 <Progress
                   value={overallProgressValue}
-                  className="h-3 rounded-full bg-yellow-500" // Using yellow for overall progress
+                  className="h-3 rounded-full bg-yellow-500"
                 />
               </div>
 

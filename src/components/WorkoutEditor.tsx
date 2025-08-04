@@ -5,21 +5,37 @@ import { Label } from "@/components/ui/label";
 import { Exercise, WorkoutSettings } from "@/hooks/useWorkoutTimer";
 import { ExerciseForm } from "./ExerciseForm";
 import { ExerciseCard } from "./ExerciseCard";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Library, Settings as SettingsIcon } from "lucide-react";
 import { toast } from "sonner";
+import { WorkoutLibrary } from "./WorkoutLibrary";
 
 interface WorkoutEditorProps {
   initialSettings: WorkoutSettings;
   onSave: (settings: WorkoutSettings) => void;
+  savedWorkouts: WorkoutSettings[];
+  onSaveCurrentWorkout: (name: string) => void;
+  onLoadWorkout: (id: string) => void;
+  onDeleteWorkout: (id: string) => void;
 }
 
 export const WorkoutEditor: React.FC<WorkoutEditorProps> = ({
   initialSettings,
   onSave,
+  savedWorkouts,
+  onSaveCurrentWorkout,
+  onLoadWorkout,
+  onDeleteWorkout,
 }) => {
   const [workoutName, setWorkoutName] = useState(initialSettings.name);
   const [exercises, setExercises] = useState<Exercise[]>(initialSettings.exercises);
   const [editingExerciseId, setEditingExerciseId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"editor" | "library">("editor");
+
+  // Update local state when initialSettings change (e.g., when a workout is loaded)
+  React.useEffect(() => {
+    setWorkoutName(initialSettings.name);
+    setExercises(initialSettings.exercises);
+  }, [initialSettings]);
 
   const handleAddExercise = () => {
     const newId = `ex-${Date.now()}`;
@@ -59,13 +75,13 @@ export const WorkoutEditor: React.FC<WorkoutEditorProps> = ({
     setEditingExerciseId(null);
   };
 
-  const handleSaveWorkout = () => {
+  const handleApplyWorkoutSettings = () => {
     if (exercises.length === 0) {
-      toast.error("Please add at least one exercise to save the workout.");
+      toast.error("Please add at least one exercise to apply the workout.");
       return;
     }
-    onSave({ name: workoutName, exercises });
-    toast.success("Workout configuration saved!");
+    onSave({ id: initialSettings.id, name: workoutName, exercises });
+    toast.success("Workout configuration applied!");
   };
 
   const moveExercise = (id: string, direction: 'up' | 'down') => {
@@ -87,68 +103,97 @@ export const WorkoutEditor: React.FC<WorkoutEditorProps> = ({
 
   return (
     <div className="space-y-6 p-4 bg-card rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold text-center text-foreground">Configure Workout</h2>
-
-      <div className="space-y-2">
-        <Label htmlFor="workoutName" className="text-foreground">Workout Name</Label>
-        <Input
-          id="workoutName"
-          type="text"
-          value={workoutName}
-          onChange={(e) => setWorkoutName(e.target.value)}
-          placeholder="e.g., Full Body Blast"
-          className="bg-input text-foreground"
-        />
+      <div className="flex justify-center space-x-4 mb-6">
+        <Button
+          variant={activeTab === "editor" ? "default" : "outline"}
+          onClick={() => setActiveTab("editor")}
+          className="flex-1"
+        >
+          <SettingsIcon size={20} className="mr-2" /> Configure
+        </Button>
+        <Button
+          variant={activeTab === "library" ? "default" : "outline"}
+          onClick={() => setActiveTab("library")}
+          className="flex-1"
+        >
+          <Library size={20} className="mr-2" /> Library
+        </Button>
       </div>
 
-      <h3 className="text-xl font-semibold text-foreground mt-6 mb-4">Exercises</h3>
-      {exercises.length === 0 && (
-        <p className="text-muted-foreground text-center">No exercises added yet. Click "Add Exercise" to begin!</p>
-      )}
-      <div className="space-y-4">
-        {exercises.map((exercise, index) => (
-          <ExerciseCard
-            key={exercise.id}
-            exercise={exercise}
-            onEdit={handleEditExercise}
-            onDelete={handleDeleteExercise}
-            onMoveUp={() => moveExercise(exercise.id, 'up')}
-            onMoveDown={() => moveExercise(exercise.id, 'down')}
-            isFirst={index === 0}
-            isLast={index === exercises.length - 1}
-          />
-        ))}
-      </div>
+      {activeTab === "editor" ? (
+        <>
+          <h2 className="text-2xl font-bold text-center text-foreground">Configure Workout</h2>
 
-      <Button
-        onClick={handleAddExercise}
-        className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90 flex items-center justify-center space-x-2 mt-4"
-      >
-        <PlusCircle size={20} />
-        <span>Add Exercise</span>
-      </Button>
-
-      {editingEx && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-card p-6 rounded-lg shadow-xl max-w-md w-full">
-            <h3 className="text-xl font-bold text-center mb-4">
-              {editingEx.name ? `Edit ${editingEx.name}` : "Add New Exercise"}
-            </h3>
-            <ExerciseForm
-              initialData={editingEx}
-              onSubmit={handleSaveExercise}
-              onCancel={handleCancelEdit}
+          <div className="space-y-2">
+            <Label htmlFor="workoutName" className="text-foreground">Workout Name</Label>
+            <Input
+              id="workoutName"
+              type="text"
+              value={workoutName}
+              onChange={(e) => setWorkoutName(e.target.value)}
+              placeholder="e.g., Full Body Blast"
+              className="bg-input text-foreground"
             />
           </div>
-        </div>
-      )}
 
-      <Button
-        onClick={handleSaveWorkout}
-        className="w-full bg-primary text-primary-foreground hover:bg-primary/90 mt-6"
-      >
-        Apply Workout Settings
-      </Button>
+          <h3 className="text-xl font-semibold text-foreground mt-6 mb-4">Exercises</h3>
+          {exercises.length === 0 && (
+            <p className="text-muted-foreground text-center">No exercises added yet. Click "Add Exercise" to begin!</p>
+          )}
+          <div className="space-y-4">
+            {exercises.map((exercise, index) => (
+              <ExerciseCard
+                key={exercise.id}
+                exercise={exercise}
+                onEdit={handleEditExercise}
+                onDelete={handleDeleteExercise}
+                onMoveUp={() => moveExercise(exercise.id, 'up')}
+                onMoveDown={() => moveExercise(exercise.id, 'down')}
+                isFirst={index === 0}
+                isLast={index === exercises.length - 1}
+              />
+            ))}
+          </div>
+
+          <Button
+            onClick={handleAddExercise}
+            className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90 flex items-center justify-center space-x-2 mt-4"
+          >
+            <PlusCircle size={20} />
+            <span>Add Exercise</span>
+          </Button>
+
+          {editingEx && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+              <div className="bg-card p-6 rounded-lg shadow-xl max-w-md w-full">
+                <h3 className="text-xl font-bold text-center mb-4">
+                  {editingEx.name ? `Edit ${editingEx.name}` : "Add New Exercise"}
+                </h3>
+                <ExerciseForm
+                  initialData={editingEx}
+                  onSubmit={handleSaveExercise}
+                  onCancel={handleCancelEdit}
+                />
+              </div>
+            </div>
+          )}
+
+          <Button
+            onClick={handleApplyWorkoutSettings}
+            className="w-full bg-primary text-primary-foreground hover:bg-primary/90 mt-6"
+          >
+            Apply Workout Settings
+          </Button>
+        </>
+      ) : (
+        <WorkoutLibrary
+          savedWorkouts={savedWorkouts}
+          onLoadWorkout={onLoadWorkout}
+          onDeleteWorkout={onDeleteWorkout}
+          onSaveCurrentWorkout={onSaveCurrentWorkout}
+          currentWorkoutName={workoutName}
+        />
+      )}
     </div>
   );
 };

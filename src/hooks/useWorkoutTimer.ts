@@ -10,6 +10,7 @@ export interface Exercise {
 }
 
 export interface WorkoutSettings {
+  id: string; // Added ID for unique identification
   name: string;
   exercises: Exercise[];
 }
@@ -22,6 +23,7 @@ interface WorkoutTimerState {
   isActive: boolean;
   isPaused: boolean;
   settings: WorkoutSettings;
+  savedWorkouts: WorkoutSettings[]; // New state for saved workouts
 }
 
 const defaultExercise: Exercise = {
@@ -33,18 +35,20 @@ const defaultExercise: Exercise = {
 };
 
 const initialDefaultSettings: WorkoutSettings = {
+  id: 'default-workout', // Assign an ID to the default workout
   name: "My Custom Workout",
   exercises: [defaultExercise],
 };
 
-const LOCAL_STORAGE_KEY = 'workoutSettings';
+const CURRENT_WORKOUT_SETTINGS_KEY = 'currentWorkoutSettings';
+const ALL_WORKOUTS_KEY = 'allWorkouts';
 
 export const useWorkoutTimer = () => {
   const calculateTotalDuration = useCallback((exercises: Exercise[]) => {
     let total = 0;
     exercises.forEach(ex => {
       total += ex.sets * ex.workDuration;
-      if (ex.sets > 0) { // Add rest duration for all sets except the last one
+      if (ex.sets > 0) {
         total += (ex.sets - 1) * ex.restDuration;
       }
     });
@@ -52,37 +56,39 @@ export const useWorkoutTimer = () => {
   }, []);
 
   const getInitialState = useCallback((): WorkoutTimerState => {
+    let currentSettings = initialDefaultSettings;
+    let savedWorkouts: WorkoutSettings[] = [];
+
     if (typeof window !== 'undefined') {
-      const storedSettings = localStorage.getItem(LOCAL_STORAGE_KEY);
-      if (storedSettings) {
+      const storedCurrentSettings = localStorage.getItem(CURRENT_WORKOUT_SETTINGS_KEY);
+      if (storedCurrentSettings) {
         try {
-          const parsedSettings: WorkoutSettings = JSON.parse(storedSettings);
-          const firstExercise = parsedSettings.exercises[0];
-          return {
-            currentExerciseIndex: 0,
-            currentExerciseSet: 1,
-            isWorking: true,
-            isActive: false,
-            isPaused: false,
-            settings: parsedSettings,
-            currentTime: firstExercise ? firstExercise.workDuration : 0,
-          };
+          currentSettings = JSON.parse(storedCurrentSettings);
         } catch (error) {
-          console.error("Failed to parse stored workout settings:", error);
-          // Fallback to default if parsing fails
+          console.error("Failed to parse stored current workout settings:", error);
+        }
+      }
+
+      const storedAllWorkouts = localStorage.getItem(ALL_WORKOUTS_KEY);
+      if (storedAllWorkouts) {
+        try {
+          savedWorkouts = JSON.parse(storedAllWorkouts);
+        } catch (error) {
+          console.error("Failed to parse stored all workouts:", error);
         }
       }
     }
-    // Default initial state if no stored settings or parsing fails
-    const firstDefaultExercise = initialDefaultSettings.exercises[0];
+
+    const firstExercise = currentSettings.exercises[0];
     return {
       currentExerciseIndex: 0,
       currentExerciseSet: 1,
       isWorking: true,
       isActive: false,
       isPaused: false,
-      settings: initialDefaultSettings,
-      currentTime: firstDefaultExercise ? firstDefaultExercise.workDuration : 0,
+      settings: currentSettings,
+      currentTime: firstExercise ? firstExercise.workDuration : 0,
+      savedWorkouts: savedWorkouts,
     };
   }, []);
 
@@ -114,8 +120,8 @@ export const useWorkoutTimer = () => {
       isPaused: false,
       currentTime: firstExercise ? firstExercise.workDuration : 0,
     }));
-    setElapsedWorkoutTime(0); // Reset elapsed time when settings change
-    setTotalWorkoutDuration(calculateTotalDuration(newSettings.exercises)); // Recalculate total duration
+    setElapsedWorkoutTime(0);
+    setTotalWorkoutDuration(calculateTotalDuration(newSettings.exercises));
   }, [calculateTotalDuration]);
 
   const start = useCallback(() => {
@@ -133,7 +139,6 @@ export const useWorkoutTimer = () => {
           : currentExercise.restDuration,
       }));
       toast.success(`Workout "${state.settings.name}" started!`);
-      // Play initial work sound if starting in work phase
       if (state.isWorking) {
         workStartSound.current?.play();
       } else {
@@ -159,11 +164,12 @@ export const useWorkoutTimer = () => {
     }
     const firstExercise = state.settings.exercises[0];
     setState(prevState => ({
-      ...getInitialState(), // Use getInitialState to reset to stored or default
-      settings: prevState.settings, // Keep current settings
+      ...getInitialState(),
+      settings: prevState.settings,
       currentTime: firstExercise ? firstExercise.workDuration : 0,
+      savedWorkouts: prevState.savedWorkouts, // Preserve saved workouts on reset
     }));
-    setElapsedWorkoutTime(0); // Reset elapsed time
+    setElapsedWorkoutTime(0);
   }, [state.settings, getInitialState]);
 
   const skip = useCallback(() => {
@@ -174,8 +180,8 @@ export const useWorkoutTimer = () => {
         return prevState;
       }
 
-      const timeToSkip = prevState.currentTime; // Time remaining in current phase
-      setElapsedWorkoutTime(prevElapsed => prevElapsed + timeToSkip); // Add remaining time to elapsed
+      const timeToSkip = prevState.currentTime;
+      setElapsedWorkoutTime(prevElapsed => prevElapsed + timeToSkip);
 
       let nextCurrentExerciseIndex = prevState.currentExerciseIndex;
       let nextCurrentExerciseSet = prevState.currentExerciseSet;
@@ -188,7 +194,7 @@ export const useWorkoutTimer = () => {
           nextIsWorking = false;
           nextTime = currentEx.restDuration;
           toast.info(`Skipped to Rest for ${currentEx.name}, Set ${nextCurrentExerciseSet}`);
-          restStartSound.current?.play(); // Play rest sound on skip
+          restStartSound.current?.play();
         } else {
           nextCurrentExerciseIndex++;
           if (nextCurrentExerciseIndex < prevState.settings.exercises.length) {
@@ -197,11 +203,11 @@ export const useWorkoutTimer = () => {
             nextIsWorking = true;
             nextTime = nextEx.workDuration;
             toast.info(`Skipped to ${nextEx.name}, Set ${nextCurrentExerciseSet}`);
-            workStartSound.current?.play(); // Play work sound on skip
+            workStartSound.current?.play();
           } else {
             workoutFinished = true;
             toast.success("Workout completed!");
-            workoutCompleteSound.current?.play(); // Play complete sound on skip
+            workoutCompleteSound.current?.play();
           }
         }
       } else {
@@ -210,7 +216,7 @@ export const useWorkoutTimer = () => {
         if (nextCurrentExerciseSet <= currentEx.sets) {
           nextTime = currentEx.workDuration;
           toast.info(`Skipped to ${currentEx.name}, Set ${nextCurrentExerciseSet}`);
-          workStartSound.current?.play(); // Play work sound on skip
+          workStartSound.current?.play();
         } else {
           nextCurrentExerciseIndex++;
           if (nextCurrentExerciseIndex < prevState.settings.exercises.length) {
@@ -219,18 +225,18 @@ export const useWorkoutTimer = () => {
             nextIsWorking = true;
             nextTime = nextEx.workDuration;
             toast.info(`Skipped to ${nextEx.name}, Set ${nextCurrentExerciseSet}`);
-            workStartSound.current?.play(); // Play work sound on skip
+            workStartSound.current?.play();
           } else {
             workoutFinished = true;
             toast.success("Workout completed!");
-            workoutCompleteSound.current?.play(); // Play complete sound on skip
+            workoutCompleteSound.current?.play();
           }
         }
       }
 
       if (workoutFinished) {
         const firstExercise = prevState.settings.exercises[0];
-        return { ...getInitialState(), settings: prevState.settings, currentTime: firstExercise ? firstExercise.workDuration : 0 };
+        return { ...getInitialState(), settings: prevState.settings, currentTime: firstExercise ? firstExercise.workDuration : 0, savedWorkouts: prevState.savedWorkouts };
       }
 
       return {
@@ -244,6 +250,42 @@ export const useWorkoutTimer = () => {
     });
   }, [state.settings.exercises, getInitialState]);
 
+  // New functions for managing saved workouts
+  const saveWorkout = useCallback((workoutName: string) => {
+    if (state.settings.exercises.length === 0) {
+      toast.error("Cannot save an empty workout. Please add at least one exercise.");
+      return;
+    }
+    const newWorkout: WorkoutSettings = {
+      ...state.settings,
+      id: `workout-${Date.now()}`,
+      name: workoutName,
+    };
+    setState(prevState => {
+      const updatedWorkouts = [...prevState.savedWorkouts, newWorkout];
+      return { ...prevState, savedWorkouts: updatedWorkouts };
+    });
+    toast.success(`Workout "${workoutName}" saved!`);
+  }, [state.settings]);
+
+  const loadWorkout = useCallback((workoutId: string) => {
+    const workoutToLoad = state.savedWorkouts.find(w => w.id === workoutId);
+    if (workoutToLoad) {
+      setSettings(workoutToLoad); // Use existing setSettings to update current workout
+      toast.success(`Workout "${workoutToLoad.name}" loaded!`);
+    } else {
+      toast.error("Workout not found.");
+    }
+  }, [state.savedWorkouts, setSettings]);
+
+  const deleteWorkout = useCallback((workoutId: string) => {
+    setState(prevState => {
+      const updatedWorkouts = prevState.savedWorkouts.filter(w => w.id !== workoutId);
+      return { ...prevState, savedWorkouts: updatedWorkouts };
+    });
+    toast.success("Workout deleted.");
+  }, []);
+
   // Effect to initialize totalWorkoutDuration when component mounts or settings change
   useEffect(() => {
     setTotalWorkoutDuration(calculateTotalDuration(state.settings.exercises));
@@ -256,16 +298,22 @@ export const useWorkoutTimer = () => {
     }
   }, [state.currentTime, state.isActive, state.isPaused]);
 
-  // Effect to save settings to local storage whenever they change
+  // Effect to save current settings to local storage whenever they change
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state.settings));
+      localStorage.setItem(CURRENT_WORKOUT_SETTINGS_KEY, JSON.stringify(state.settings));
     }
   }, [state.settings]);
 
+  // Effect to save all saved workouts to local storage whenever they change
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(ALL_WORKOUTS_KEY, JSON.stringify(state.savedWorkouts));
+    }
+  }, [state.savedWorkouts]);
+
   // Main timer effect
   useEffect(() => {
-    // Update previous state for next render's sound logic
     prevStateRef.current = state;
 
     if (!currentExercise && state.settings.exercises.length > 0) {
@@ -285,17 +333,15 @@ export const useWorkoutTimer = () => {
             return prevState;
           }
 
-          // Increment elapsed workout time
           setElapsedWorkoutTime(prevElapsed => prevElapsed + 1);
 
           if (prevState.currentTime > 1) {
             return { ...prevState, currentTime: prevState.currentTime - 1 };
           } else {
-            // Time is 0, transition to next phase/set/exercise
             if (prevState.isWorking) {
               if (prevState.currentExerciseSet < currentEx.sets) {
                 toast.info(`Set ${prevState.currentExerciseSet} of ${currentEx.name} complete! Time for rest.`);
-                restStartSound.current?.play(); // Play rest sound
+                restStartSound.current?.play();
                 return {
                   ...prevState,
                   isWorking: false,
@@ -306,7 +352,7 @@ export const useWorkoutTimer = () => {
                 if (nextExerciseIndex < prevState.settings.exercises.length) {
                   const nextEx = prevState.settings.exercises[nextExerciseIndex];
                   toast.info(`Exercise "${currentEx.name}" complete! Starting "${nextEx.name}".`);
-                  workStartSound.current?.play(); // Play work sound
+                  workStartSound.current?.play();
                   return {
                     ...prevState,
                     currentExerciseIndex: nextExerciseIndex,
@@ -316,22 +362,23 @@ export const useWorkoutTimer = () => {
                   };
                 } else {
                   toast.success("Workout completed!");
-                  workoutCompleteSound.current?.play(); // Play sound on workout completion
+                  workoutCompleteSound.current?.play();
                   if (intervalRef.current) {
                     clearInterval(intervalRef.current);
                     intervalRef.current = null;
                   }
                   const firstExercise = prevState.settings.exercises[0];
                   return {
-                    ...getInitialState(), // Use getInitialState to reset to stored or default
-                    settings: prevState.settings, // Keep current settings
+                    ...getInitialState(),
+                    settings: prevState.settings,
                     currentTime: firstExercise ? firstExercise.workDuration : 0,
+                    savedWorkouts: prevState.savedWorkouts,
                   };
                 }
               }
             } else {
               toast.info(`Rest complete! Starting Set ${prevState.currentExerciseSet + 1} of ${currentEx.name}.`);
-              workStartSound.current?.play(); // Play work sound
+              workStartSound.current?.play();
               return {
                 ...prevState,
                 currentExerciseSet: prevState.currentExerciseSet + 1,
@@ -345,7 +392,6 @@ export const useWorkoutTimer = () => {
     } else {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
-        intervalRef.current = null;
       }
     }
 
@@ -366,5 +412,8 @@ export const useWorkoutTimer = () => {
     currentExercise,
     totalWorkoutDuration,
     elapsedWorkoutTime,
+    saveWorkout,
+    loadWorkout,
+    deleteWorkout,
   };
 };
