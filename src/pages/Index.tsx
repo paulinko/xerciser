@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button"; // Import Button
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background relative"> {/* Added relative for positioning */}
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background relative">
       <WorkoutTimer />
-      <div className="absolute bottom-4 left-4"> {/* Positioned in bottom-left */}
+      <div className="absolute top-4 left-4"> {/* Changed to top-left */}
         <Link to="/credits">
           <Button
             variant="link"
