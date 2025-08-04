@@ -80,7 +80,7 @@ const Credits = () => {
         <p className="text-lg text-center mt-2 font-semibold">
           Check out the project on{" "}
           <a
-            href="https://github.com/YOUR_USERNAME/xerciser"
+            href="https://github.com/paulinko/xerciser"
             target="_blank"
             rel="noopener noreferrer"
             className="text-primary hover:underline"
