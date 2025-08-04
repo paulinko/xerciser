@@ -2,18 +2,18 @@
   "name": "Xcersise Workout Timer",
   "short_name": "Xcersise",
   "description": "A simple and effective workout timer PWA.",
-  "start_url": "/",
+  "start_url": "/xerciser",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#1a202c",
   "icons": [
     {
-      "src": "/appicon.png",
+      "src": "./appicon.png",
       "sizes": "192x192",
       "type": "image/svg+xml"
     },
     {
-      "src": "/appicon512.png",
+      "src": "./appicon512.png",
       "sizes": "512x512",
       "type": "image/svg+xml"
     }
