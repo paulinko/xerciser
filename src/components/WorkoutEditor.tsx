@@ -5,21 +5,21 @@ import { Label } from "@/components/ui/label";
 import { Exercise, WorkoutSettings } from "@/hooks/useWorkoutTimer";
 import { ExerciseForm } from "./ExerciseForm";
 import { ExerciseCard } from "./ExerciseCard";
-import { PlusCircle, Library, Settings as SettingsIcon, Play, History } from "lucide-react"; // Import History icon
+import { PlusCircle, Library, Settings as SettingsIcon, Play, History } from "lucide-react";
 import { toast } from "sonner";
 import { WorkoutLibrary } from "./WorkoutLibrary";
-import { WorkoutHistoryDisplay } from "./WorkoutHistoryDisplay"; // Import new component
-import { WorkoutLogEntry } from "@/hooks/useWorkoutStreak"; // Import WorkoutLogEntry
+import { WorkoutHistoryDisplay } from "./WorkoutHistoryDisplay";
+import { WorkoutLogEntry } from "@/hooks/useWorkoutStreak";
 
 interface WorkoutEditorProps {
   initialSettings: WorkoutSettings;
   onApplyAndStart: (settings: WorkoutSettings) => void;
   savedWorkouts: WorkoutSettings[];
-  onSaveCurrentWorkout: (name: string, exercises: Exercise[]) => void;
+  onSaveCurrentWorkout: (name: string, exercises: Exercise[], exerciseSets: number, restBetweenWorkoutSets: number) => void;
   onLoadWorkout: (id: string) => void;
   onDeleteWorkout: (id: string) => void;
-  workoutHistory: WorkoutLogEntry[]; // New prop for workout history
-  currentStreak: number; // New prop for current streak
+  workoutHistory: WorkoutLogEntry[];
+  currentStreak: number;
 }
 
 export const WorkoutEditor: React.FC<WorkoutEditorProps> = ({
@@ -29,18 +29,21 @@ export const WorkoutEditor: React.FC<WorkoutEditorProps> = ({
   onSaveCurrentWorkout,
   onLoadWorkout,
   onDeleteWorkout,
-  workoutHistory, // Destructure new prop
-  currentStreak, // Destructure new prop
+  workoutHistory,
+  currentStreak,
 }) => {
   const [workoutName, setWorkoutName] = useState(initialSettings.name);
   const [exercises, setExercises] = useState<Exercise[]>(initialSettings.exercises);
+  const [exerciseSets, setExerciseSets] = useState(initialSettings.exerciseSets);
+  const [restBetweenWorkoutSets, setRestBetweenWorkoutSets] = useState(initialSettings.restBetweenWorkoutSets);
   const [editingExerciseId, setEditingExerciseId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"editor" | "library" | "history">("editor"); // Add 'history' tab
+  const [activeTab, setActiveTab] = useState<"editor" | "library" | "history">("editor");
 
-  // Update local state when initialSettings change (e.g., when a workout is loaded)
   React.useEffect(() => {
     setWorkoutName(initialSettings.name);
     setExercises(initialSettings.exercises);
+    setExerciseSets(initialSettings.exerciseSets);
+    setRestBetweenWorkoutSets(initialSettings.restBetweenWorkoutSets);
   }, [initialSettings]);
 
   const handleAddExercise = () => {
@@ -86,8 +89,15 @@ export const WorkoutEditor: React.FC<WorkoutEditorProps> = ({
       toast.error("Please add at least one exercise to start the workout.");
       return;
     }
-    onApplyAndStart({ id: initialSettings.id, name: workoutName, exercises });
-    // The onApplyAndStart prop will handle setting the state and starting the workout
+    if (exerciseSets < 1) {
+      toast.error("Workout sets must be at least 1.");
+      return;
+    }
+    if (restBetweenWorkoutSets < 0) {
+      toast.error("Rest between workout sets cannot be negative.");
+      return;
+    }
+    onApplyAndStart({ id: initialSettings.id, name: workoutName, exercises, exerciseSets, restBetweenWorkoutSets });
   };
 
   const moveExercise = (id: string, direction: 'up' | 'down') => {
@@ -109,7 +119,7 @@ export const WorkoutEditor: React.FC<WorkoutEditorProps> = ({
 
   return (
     <div className="space-y-6 p-4 bg-card rounded-lg shadow-md">
-      <div className="flex justify-center space-x-2 mb-6"> {/* Adjusted space-x */}
+      <div className="flex justify-center space-x-2 mb-6">
         <Button
           variant={activeTab === "editor" ? "default" : "outline"}
           onClick={() => setActiveTab("editor")}
@@ -145,6 +155,32 @@ export const WorkoutEditor: React.FC<WorkoutEditorProps> = ({
               value={workoutName}
               onChange={(e) => setWorkoutName(e.target.value)}
               placeholder="e.g., Full Body Blast"
+              className="bg-input text-foreground"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="exerciseSets" className="text-foreground">Workout Sets (Repeat entire list)</Label>
+            <Input
+              id="exerciseSets"
+              type="number"
+              value={exerciseSets}
+              onChange={(e) => setExerciseSets(Math.max(1, Number(e.target.value)))}
+              min="1"
+              placeholder="e.g., 1"
+              className="bg-input text-foreground"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="restBetweenWorkoutSets" className="text-foreground">Rest Between Workout Sets (seconds)</Label>
+            <Input
+              id="restBetweenWorkoutSets"
+              type="number"
+              value={restBetweenWorkoutSets}
+              onChange={(e) => setRestBetweenWorkoutSets(Math.max(0, Number(e.target.value)))}
+              min="0"
+              placeholder="e.g., 30"
               className="bg-input text-foreground"
             />
           </div>
@@ -204,7 +240,7 @@ export const WorkoutEditor: React.FC<WorkoutEditorProps> = ({
           savedWorkouts={savedWorkouts}
           onLoadWorkout={onLoadWorkout}
           onDeleteWorkout={onDeleteWorkout}
-          onSaveCurrentWorkout={(name) => onSaveCurrentWorkout(name, exercises)}
+          onSaveCurrentWorkout={(name, exercises) => onSaveCurrentWorkout(name, exercises, exerciseSets, restBetweenWorkoutSets)}
           currentWorkoutName={workoutName}
         />
       ) : (

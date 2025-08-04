@@ -12,8 +12,9 @@ const WorkoutTimer: React.FC = () => {
   const {
     currentExerciseIndex,
     currentExerciseSet,
+    currentWorkoutSet, // New: Get current workout set
     currentTime,
-    isWorking,
+    currentPhase, // New: Get current phase
     isActive,
     isPaused,
     settings,
@@ -29,21 +30,24 @@ const WorkoutTimer: React.FC = () => {
     saveWorkout,
     loadWorkout,
     deleteWorkout,
-    currentStreak, // Get currentStreak from useWorkoutTimer
-    workoutHistory, // Get workoutHistory from useWorkoutTimer
+    currentStreak,
+    workoutHistory,
   } = useWorkoutTimer();
 
   const [showConfig, setShowConfig] = useState(true);
 
   const handleApplyAndStartWorkout = (newSettings: typeof settings) => {
-    setSettings(newSettings); // Apply the new settings
-    setShowConfig(false); // Hide the config editor
-    start(); // Start the workout
+    setSettings(newSettings);
+    setShowConfig(false);
+    start();
   };
 
-  const totalPhaseDuration = isWorking
+  const totalPhaseDuration = currentPhase === 'work'
     ? currentExercise?.workDuration || 0
-    : currentExercise?.restDuration || 0;
+    : currentPhase === 'rest'
+      ? currentExercise?.restDuration || 0
+      : settings.restBetweenWorkoutSets || 0; // For between workout sets rest
+
   const phaseProgressValue = totalPhaseDuration > 0 ? (currentTime / totalPhaseDuration) * 100 : 0;
 
   const overallProgressValue = totalWorkoutDuration > 0 ? (elapsedWorkoutTime / totalWorkoutDuration) * 100 : 0;
@@ -55,13 +59,17 @@ const WorkoutTimer: React.FC = () => {
     return `${minutes.toString().padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
-  const timerColorClass = isWorking
+  const timerColorClass = currentPhase === 'work'
     ? "bg-red-500"
-    : "bg-blue-500";
+    : currentPhase === 'rest'
+      ? "bg-blue-500"
+      : "bg-purple-500"; // Color for rest between workout sets
 
-  const textColorClass = isWorking
+  const textColorClass = currentPhase === 'work'
     ? "text-red-500"
-    : "text-blue-500";
+    : currentPhase === 'rest'
+      ? "text-blue-500"
+      : "text-purple-500"; // Color for rest between workout sets
 
   return (
     <div className="flex flex-col items-center justify-center w-full h-full">
@@ -88,14 +96,14 @@ const WorkoutTimer: React.FC = () => {
               onSaveCurrentWorkout={saveWorkout}
               onLoadWorkout={loadWorkout}
               onDeleteWorkout={deleteWorkout}
-              workoutHistory={workoutHistory} // Pass workoutHistory
-              currentStreak={currentStreak} // Pass currentStreak
+              workoutHistory={workoutHistory}
+              currentStreak={currentStreak}
             />
           ) : (
             <>
               <div className="text-center space-y-4">
                 <p className="text-lg text-muted-foreground">
-                  {isWorking ? "Work Phase" : "Rest Phase"}
+                  {currentPhase === 'work' ? "Work Phase" : currentPhase === 'rest' ? "Rest Phase" : "Rest Between Workout Sets"}
                 </p>
                 <h3 className={`text-6xl font-bold ${textColorClass}`}>
                   {formatTime(currentTime)}
@@ -107,6 +115,9 @@ const WorkoutTimer: React.FC = () => {
                 )}
                 <p className="text-lg text-muted-foreground">
                   Exercise {currentExerciseIndex + 1} / {settings.exercises.length}
+                </p>
+                <p className="text-lg text-muted-foreground">
+                  Workout Set {currentWorkoutSet} / {settings.exerciseSets}
                 </p>
                 <p className="text-lg text-muted-foreground">
                   Workout Remaining: {formatTime(remainingWorkoutTime)}
