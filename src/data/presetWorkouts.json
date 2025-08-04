@@ -18,8 +18,8 @@
       { "id": "preset-ex-2-1", "name": "Shoulder pulses", "sets": 1, "workDuration": 30, "restDuration": 10 },
       { "id": "preset-ex-2-2", "name": "Push-UPs", "sets": 1, "workDuration": 30, "restDuration": 20 },
       { "id": "preset-ex-2-3", "name": " Superman Exercise", "sets": 1, "workDuration": 30, "restDuration": 10 },
-      { "id": "preset-ex-2-4", "name": "Up-Down Plank", "sets": 3, "workDuration": 30, "restDuration": 20 },
-      { "id": "preset-ex-2-5", "name": "Triceps Reverse Dips", "sets": 3, "workDuration": 30, "restDuration": 20 }
+      { "id": "preset-ex-2-4", "name": "Up-Down Plank", "sets": 1, "workDuration": 30, "restDuration": 20 },
+      { "id": "preset-ex-2-5", "name": "Triceps Reverse Dips", "sets": 1, "workDuration": 30, "restDuration": 20 }
     ]
   },
   {
