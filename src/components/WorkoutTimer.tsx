@@ -48,16 +48,16 @@ const WorkoutTimer: React.FC = () => {
 
   // Dynamic classes based on workout stage
   const timerColorClass = isWorking
-    ? "bg-ut-orange-500" // Orange for work
-    : "bg-sky-blue-500"; // Sky blue for rest
+    ? "bg-red-500" // Red for work
+    : "bg-blue-500"; // Blue for rest
 
   const textColorClass = isWorking
-    ? "text-ut-orange-500" // Orange text for work
-    : "text-sky-blue-500"; // Sky blue text for rest
+    ? "text-red-500" // Red text for work
+    : "text-blue-500"; // Blue text for rest
 
   const workoutBackgroundClass = isWorking
-    ? "bg-ut-orange-500" // Use ut_orange-500 for work background
-    : "bg-sky-blue-500"; // Use sky_blue-500 for rest background
+    ? "bg-red-500" // Red for work background
+    : "bg-blue-500"; // Blue for rest background
 
   return (
     <div className={cn(
@@ -107,7 +107,7 @@ const WorkoutTimer: React.FC = () => {
                 <p className="text-sm text-muted-foreground text-left">Overall Workout Progress</p>
                 <Progress
                   value={overallProgressValue}
-                  className="h-3 rounded-full bg-selective-yellow-500" // Distinct color for overall progress
+                  className="h-3 rounded-full bg-yellow-500" // Using yellow for overall progress
                 />
               </div>
 
@@ -116,7 +116,7 @@ const WorkoutTimer: React.FC = () => {
                 {!isActive || isPaused ? (
                   <Button
                     onClick={start}
-                    className="bg-ut-orange-600 hover:bg-ut-orange-700 text-white px-6 py-3 rounded-full text-lg font-semibold flex items-center space-x-2"
+                    className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-full text-lg font-semibold flex items-center space-x-2"
                   >
                     <Play size={24} />
                     <span>Start</span>
@@ -124,7 +124,7 @@ const WorkoutTimer: React.FC = () => {
                 ) : (
                   <Button
                     onClick={pause}
-                    className="bg-prussian-blue-600 hover:bg-prussian-blue-700 text-white px-6 py-3 rounded-full text-lg font-semibold flex items-center space-x-2"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full text-lg font-semibold flex items-center space-x-2"
                   >
                     <Pause size={24} />
                     <span>Pause</span>
@@ -133,7 +133,7 @@ const WorkoutTimer: React.FC = () => {
                 <Button
                   onClick={reset}
                   variant="outline"
-                  className="border-prussian-blue-300 text-prussian-blue-700 hover:bg-prussian-blue-100 dark:border-prussian-blue-700 dark:text-prussian-blue-300 dark:hover:bg-prussian-blue-800 px-6 py-3 rounded-full text-lg font-semibold flex items-center space-x-2"
+                  className="px-6 py-3 rounded-full text-lg font-semibold flex items-center space-x-2"
                 >
                   <RotateCcw size={24} />
                   <span>Reset</span>
@@ -142,7 +142,7 @@ const WorkoutTimer: React.FC = () => {
               <div className="flex justify-center mt-4">
                 <Button
                   onClick={skip}
-                  className="bg-blue-green-600 hover:bg-blue-green-700 text-white px-6 py-3 rounded-full text-lg font-semibold flex items-center space-x-2"
+                  className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-full text-lg font-semibold flex items-center space-x-2"
                 >
                   <SkipForward size={24} />
                   <span>Skip Phase</span>
