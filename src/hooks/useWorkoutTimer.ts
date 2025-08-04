@@ -186,13 +186,16 @@ export const useWorkoutTimer = () => {
     }
     const firstExercise = state.settings.exercises[0];
     setState(prevState => ({
-      ...getInitialState(), // Re-initialize state including saved workouts from LS
-      settings: prevState.settings, // Keep current settings if they were explicitly set
+      ...prevState, // Keep current settings and saved workouts
+      currentExerciseIndex: 0,
+      currentExerciseSet: 1,
+      isWorking: true,
+      isActive: false,
+      isPaused: false,
       currentTime: firstExercise ? firstExercise.workDuration : 0,
-      // savedWorkouts will be reloaded by getInitialState
     }));
     setElapsedWorkoutTime(0);
-  }, [state.settings, getInitialState]);
+  }, [state.settings]);
 
   const skip = useCallback(() => {
     setState(prevState => {
@@ -258,7 +261,15 @@ export const useWorkoutTimer = () => {
 
       if (workoutFinished) {
         const firstExercise = prevState.settings.exercises[0];
-        return { ...getInitialState(), settings: prevState.settings, currentTime: firstExercise ? firstExercise.workDuration : 0, savedWorkouts: prevState.savedWorkouts };
+        return {
+          ...prevState, // Keep current settings and saved workouts
+          currentExerciseIndex: 0,
+          currentExerciseSet: 1,
+          isWorking: true,
+          isActive: false,
+          isPaused: false,
+          currentTime: firstExercise ? firstExercise.workDuration : 0,
+        };
       }
 
       return {
@@ -270,7 +281,7 @@ export const useWorkoutTimer = () => {
         isPaused: false,
       };
     });
-  }, [state.settings.exercises, getInitialState]);
+  }, [state.settings.exercises]);
 
   // New functions for managing saved workouts
   const saveWorkout = useCallback((workoutName: string) => {
@@ -396,10 +407,13 @@ export const useWorkoutTimer = () => {
                   }
                   const firstExercise = prevState.settings.exercises[0];
                   return {
-                    ...getInitialState(),
-                    settings: prevState.settings,
+                    ...prevState, // Keep current settings and saved workouts
+                    currentExerciseIndex: 0,
+                    currentExerciseSet: 1,
+                    isWorking: true,
+                    isActive: false,
+                    isPaused: false,
                     currentTime: firstExercise ? firstExercise.workDuration : 0,
-                    savedWorkouts: prevState.savedWorkouts,
                   };
                 }
               }
@@ -427,7 +441,7 @@ export const useWorkoutTimer = () => {
         clearInterval(intervalRef.current);
       }
     };
-  }, [state.isActive, state.isPaused, state.currentTime, state.isWorking, state.currentExerciseIndex, state.currentExerciseSet, state.settings.exercises, currentExercise, reset, getInitialState]);
+  }, [state.isActive, state.isPaused, state.currentTime, state.isWorking, state.currentExerciseIndex, state.currentExerciseSet, state.settings.exercises, currentExercise, reset]);
 
   return {
     ...state,
