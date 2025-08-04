@@ -64,7 +64,7 @@ const WorkoutTimer: React.FC = () => {
     <div className="flex flex-col items-center justify-center w-full h-full">
       <Card className="w-full max-w-md mx-auto shadow-lg rounded-xl overflow-hidden">
         <CardHeader className="bg-primary text-primary-foreground py-4 flex flex-row items-center justify-between px-6">
-          <CardTitle className="text-3xl font-extrabold text-center flex-1">
+          <CardTitle className="text-3xl font-extrabold flex-1">
             Xercise
           </CardTitle>
           <Link to="/credits">
