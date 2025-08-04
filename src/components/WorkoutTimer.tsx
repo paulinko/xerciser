@@ -21,6 +21,8 @@ const WorkoutTimer: React.FC = () => {
     reset,
     skip,
     currentExercise,
+    totalWorkoutDuration, // New
+    elapsedWorkoutTime,   // New
   } = useWorkoutTimer();
 
   const [showConfig, setShowConfig] = useState(true);
@@ -30,10 +32,12 @@ const WorkoutTimer: React.FC = () => {
     setShowConfig(false);
   };
 
-  const totalDuration = isWorking
+  const totalPhaseDuration = isWorking
     ? currentExercise?.workDuration || 0
     : currentExercise?.restDuration || 0;
-  const progressValue = totalDuration > 0 ? (currentTime / totalDuration) * 100 : 0;
+  const phaseProgressValue = totalPhaseDuration > 0 ? (currentTime / totalPhaseDuration) * 100 : 0;
+
+  const overallProgressValue = totalWorkoutDuration > 0 ? (elapsedWorkoutTime / totalWorkoutDuration) * 100 : 0;
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -82,10 +86,22 @@ const WorkoutTimer: React.FC = () => {
                 </p>
               </div>
 
-              <Progress
-                value={progressValue}
-                className={`h-3 rounded-full ${timerColorClass}`}
-              />
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground text-left">Current Phase Progress</p>
+                <Progress
+                  value={phaseProgressValue}
+                  className={`h-3 rounded-full ${timerColorClass}`}
+                />
+              </div>
+
+              <div className="space-y-2 mt-4">
+                <p className="text-sm text-muted-foreground text-left">Overall Workout Progress</p>
+                <Progress
+                  value={overallProgressValue}
+                  className="h-3 rounded-full bg-purple-500" // Distinct color for overall progress
+                />
+              </div>
+
 
               <div className="flex justify-center space-x-4 mt-6">
                 {!isActive || isPaused ? (

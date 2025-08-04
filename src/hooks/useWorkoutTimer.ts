@@ -47,18 +47,31 @@ const initialState: WorkoutTimerState = {
 
 export const useWorkoutTimer = () => {
   const [state, setState] = useState<WorkoutTimerState>(initialState);
+  const [totalWorkoutDuration, setTotalWorkoutDuration] = useState(0);
+  const [elapsedWorkoutTime, setElapsedWorkoutTime] = useState(0);
   const intervalRef = useRef<number | null>(null);
 
   const currentExercise = state.settings.exercises[state.currentExerciseIndex];
 
   // Sound effects
   const workStartSound = useRef(typeof Audio !== 'undefined' ? new Audio('/sounds/work_start.mp3') : null);
-  const restStartSound = useRef(typeof Audio !== 'undefined' ? new Audio('/sounds/rest_start.mp3') : null);
+  const restStartSound = useRef(typeof Audio !== 'undefined' ? new Audio('/sounds/rest_start.mpd') : null);
   const countdownBeepSound = useRef(typeof Audio !== 'undefined' ? new Audio('/sounds/countdown_beep.mp3') : null);
   const workoutCompleteSound = useRef(typeof Audio !== 'undefined' ? new Audio('/sounds/workout_complete.mp3') : null);
 
   // Store previous state to detect changes for sound effects
   const prevStateRef = useRef<WorkoutTimerState | null>(null);
+
+  const calculateTotalDuration = useCallback((exercises: Exercise[]) => {
+    let total = 0;
+    exercises.forEach(ex => {
+      total += ex.sets * ex.workDuration;
+      if (ex.sets > 0) { // Add rest duration for all sets except the last one
+        total += (ex.sets - 1) * ex.restDuration;
+      }
+    });
+    return total;
+  }, []);
 
   const setSettings = useCallback((newSettings: WorkoutSettings) => {
     const firstExercise = newSettings.exercises[0];
@@ -72,7 +85,9 @@ export const useWorkoutTimer = () => {
       isPaused: false,
       currentTime: firstExercise ? firstExercise.workDuration : 0,
     }));
-  }, []);
+    setElapsedWorkoutTime(0); // Reset elapsed time when settings change
+    setTotalWorkoutDuration(calculateTotalDuration(newSettings.exercises)); // Recalculate total duration
+  }, [calculateTotalDuration]);
 
   const start = useCallback(() => {
     if (!currentExercise) {
@@ -119,7 +134,7 @@ export const useWorkoutTimer = () => {
       settings: prevState.settings,
       currentTime: firstExercise ? firstExercise.workDuration : 0,
     }));
-    toast.info("Workout reset.");
+    setElapsedWorkoutTime(0); // Reset elapsed time
   }, [state.settings]);
 
   const skip = useCallback(() => {
@@ -129,6 +144,9 @@ export const useWorkoutTimer = () => {
         toast.error("No current exercise to skip.");
         return prevState;
       }
+
+      const timeToSkip = prevState.currentTime; // Time remaining in current phase
+      setElapsedWorkoutTime(prevElapsed => prevElapsed + timeToSkip); // Add remaining time to elapsed
 
       let nextCurrentExerciseIndex = prevState.currentExerciseIndex;
       let nextCurrentExerciseSet = prevState.currentExerciseSet;
@@ -196,6 +214,11 @@ export const useWorkoutTimer = () => {
     });
   }, [state.settings.exercises]);
 
+  // Effect to initialize totalWorkoutDuration when component mounts or settings change
+  useEffect(() => {
+    setTotalWorkoutDuration(calculateTotalDuration(state.settings.exercises));
+  }, [state.settings.exercises, calculateTotalDuration]);
+
   // Effect for playing countdown beep
   useEffect(() => {
     if (state.isActive && !state.isPaused && state.currentTime > 0 && state.currentTime <= 3) {
@@ -224,6 +247,9 @@ export const useWorkoutTimer = () => {
             intervalRef.current = null;
             return prevState;
           }
+
+          // Increment elapsed workout time
+          setElapsedWorkoutTime(prevElapsed => prevElapsed + 1);
 
           if (prevState.currentTime > 1) {
             return { ...prevState, currentTime: prevState.currentTime - 1 };
@@ -301,5 +327,7 @@ export const useWorkoutTimer = () => {
     reset,
     skip,
     currentExercise,
+    totalWorkoutDuration,
+    elapsedWorkoutTime,
   };
 };
