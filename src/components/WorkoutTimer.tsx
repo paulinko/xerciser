@@ -132,7 +132,7 @@ const WorkoutTimer: React.FC = () => {
                 {!isActive || isPaused ? (
                   <Button
                     onClick={start}
-                    className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-full text-lg font-semibold flex items-center space-x-2"
+                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-full text-lg font-semibold flex items-center space-x-2"
                   >
                     <Play size={24} />
                     <span>Start</span>
@@ -158,7 +158,7 @@ const WorkoutTimer: React.FC = () => {
               <div className="flex justify-center mt-4">
                 <Button
                   onClick={skip}
-                  className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-full text-lg font-semibold flex items-center space-x-2"
+                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-full text-lg font-semibold flex items-center space-x-2"
                 >
                   <SkipForward size={24} />
                   <span>Skip Phase</span>
