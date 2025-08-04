@@ -8,12 +8,12 @@
   "theme_color": "#1a202c",
   "icons": [
     {
-      "src": "/placeholder.svg",
+      "src": "/appicon.png",
       "sizes": "192x192",
       "type": "image/svg+xml"
     },
     {
-      "src": "/placeholder.svg",
+      "src": "/appicon512.png",
       "sizes": "512x512",
       "type": "image/svg+xml"
     }
