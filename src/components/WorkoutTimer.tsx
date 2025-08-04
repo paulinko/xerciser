@@ -33,9 +33,10 @@ const WorkoutTimer: React.FC = () => {
 
   const [showConfig, setShowConfig] = useState(true);
 
-  const handleSaveSettings = (newSettings: typeof settings) => {
-    setSettings(newSettings);
-    setShowConfig(false);
+  const handleApplyAndStartWorkout = (newSettings: typeof settings) => {
+    setSettings(newSettings); // Apply the new settings
+    setShowConfig(false); // Hide the config editor
+    start(); // Start the workout
   };
 
   const totalPhaseDuration = isWorking
@@ -80,7 +81,7 @@ const WorkoutTimer: React.FC = () => {
           {showConfig ? (
             <WorkoutEditor
               initialSettings={settings}
-              onSave={handleSaveSettings}
+              onApplyAndStart={handleApplyAndStartWorkout} // Pass the new handler
               savedWorkouts={savedWorkouts}
               onSaveCurrentWorkout={saveWorkout}
               onLoadWorkout={loadWorkout}

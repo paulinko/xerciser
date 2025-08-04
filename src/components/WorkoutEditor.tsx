@@ -5,13 +5,13 @@ import { Label } from "@/components/ui/label";
 import { Exercise, WorkoutSettings } from "@/hooks/useWorkoutTimer";
 import { ExerciseForm } from "./ExerciseForm";
 import { ExerciseCard } from "./ExerciseCard";
-import { PlusCircle, Library, Settings as SettingsIcon } from "lucide-react";
+import { PlusCircle, Library, Settings as SettingsIcon, Play } from "lucide-react";
 import { toast } from "sonner";
 import { WorkoutLibrary } from "./WorkoutLibrary";
 
 interface WorkoutEditorProps {
   initialSettings: WorkoutSettings;
-  onSave: (settings: WorkoutSettings) => void;
+  onApplyAndStart: (settings: WorkoutSettings) => void; // New prop for applying and starting
   savedWorkouts: WorkoutSettings[];
   onSaveCurrentWorkout: (name: string, exercises: Exercise[]) => void;
   onLoadWorkout: (id: string) => void;
@@ -20,7 +20,7 @@ interface WorkoutEditorProps {
 
 export const WorkoutEditor: React.FC<WorkoutEditorProps> = ({
   initialSettings,
-  onSave,
+  onApplyAndStart, // Use the new prop
   savedWorkouts,
   onSaveCurrentWorkout,
   onLoadWorkout,
@@ -75,13 +75,13 @@ export const WorkoutEditor: React.FC<WorkoutEditorProps> = ({
     setEditingExerciseId(null);
   };
 
-  const handleApplyWorkoutSettings = () => {
+  const handleApplyAndStartWorkout = () => {
     if (exercises.length === 0) {
-      toast.error("Please add at least one exercise to apply the workout.");
+      toast.error("Please add at least one exercise to start the workout.");
       return;
     }
-    onSave({ id: initialSettings.id, name: workoutName, exercises });
-    toast.success("Workout configuration applied!");
+    onApplyAndStart({ id: initialSettings.id, name: workoutName, exercises });
+    // The onApplyAndStart prop will handle setting the state and starting the workout
   };
 
   const moveExercise = (id: string, direction: 'up' | 'down') => {
@@ -136,6 +136,14 @@ export const WorkoutEditor: React.FC<WorkoutEditorProps> = ({
             />
           </div>
 
+          <Button
+            onClick={handleApplyAndStartWorkout}
+            className="w-full bg-primary text-primary-foreground hover:bg-primary/90 mt-6 flex items-center justify-center space-x-2"
+          >
+            <Play size={20} />
+            <span>Start Workout</span>
+          </Button>
+
           <h3 className="text-xl font-semibold text-foreground mt-6 mb-4">Exercises</h3>
           {exercises.length === 0 && (
             <p className="text-muted-foreground text-center">No exercises added yet. Click "Add Exercise" to begin!</p>
@@ -177,13 +185,6 @@ export const WorkoutEditor: React.FC<WorkoutEditorProps> = ({
               </div>
             </div>
           )}
-
-          <Button
-            onClick={handleApplyWorkoutSettings}
-            className="w-full bg-primary text-primary-foreground hover:bg-primary/90 mt-6"
-          >
-            Apply Workout Settings
-          </Button>
         </>
       ) : (
         <WorkoutLibrary
