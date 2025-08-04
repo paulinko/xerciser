@@ -56,8 +56,8 @@ const WorkoutTimer: React.FC = () => {
     : "text-prussian-blue-500"; // Blue text for rest
 
   const workoutBackgroundClass = isWorking
-    ? "bg-ut-orange-900 dark:bg-ut-orange-100" // Light orange for light mode, dark orange for dark mode
-    : "bg-sky-blue-900 dark:bg-prussian-blue-100"; // Light blue for light mode, dark blue for dark mode
+    ? "bg-ut-orange-500" // Use a stronger orange for work background
+    : "bg-prussian-blue-500"; // Use a stronger blue for rest background
 
   return (
     <div className={cn(
@@ -142,7 +142,6 @@ const WorkoutTimer: React.FC = () => {
               <div className="flex justify-center mt-4">
                 <Button
                   onClick={skip}
-                  // Removed variant="secondary" to allow direct Tailwind classes to apply
                   className="bg-blue-green-600 hover:bg-blue-green-700 text-white px-6 py-3 rounded-full text-lg font-semibold flex items-center space-x-2"
                 >
                   <SkipForward size={24} />
