@@ -142,7 +142,7 @@ const WorkoutTimer: React.FC = () => {
               <div className="flex justify-center mt-4">
                 <Button
                   onClick={skip}
-                  variant="secondary"
+                  // Removed variant="secondary" to allow direct Tailwind classes to apply
                   className="bg-blue-green-600 hover:bg-blue-green-700 text-white px-6 py-3 rounded-full text-lg font-semibold flex items-center space-x-2"
                 >
                   <SkipForward size={24} />
