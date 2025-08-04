@@ -5,7 +5,7 @@ import path from "path";
 
 // The base path for your GitHub Pages deployment.
 // IMPORTANT: Replace <REPO_NAME> with your actual GitHub repository name.
-const REPO_NAME = "xcer"; // Make sure to replace this with your actual repo name!
+const REPO_NAME = "xerciser"; // Make sure to replace this with your actual repo name!
 
 export default defineConfig(({ command }) => ({
   server: {
