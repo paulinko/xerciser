@@ -74,6 +74,10 @@ const Credits = () => {
           </p>
         </div>
 
+        <p className="text-lg text-center mt-6 font-semibold">
+          Created with Dyad and Gemini
+        </p>
+
         <div className="mt-8 text-center">
           <Link to="/">
             <Button variant="outline" className="flex items-center mx-auto">
