@@ -77,6 +77,17 @@ const Credits = () => {
         <p className="text-lg text-center mt-6 font-semibold">
           Created with Dyad and Gemini
         </p>
+        <p className="text-lg text-center mt-2 font-semibold">
+          Check out the project on{" "}
+          <a
+            href="https://github.com/YOUR_USERNAME/xerciser"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:underline"
+          >
+            GitHub
+          </a>
+        </p>
 
         <div className="mt-8 text-center">
           <Link to="/">
