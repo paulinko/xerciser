@@ -2,11 +2,13 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Exercise, WorkoutSettings } from "@/hooks/useWorkoutTimer";
+import { Exercise, WorkoutSettings, useWorkoutTimer } from "@/hooks/useWorkoutTimer";
 import { ExerciseForm } from "./ExerciseForm";
 import { ExerciseCard } from "./ExerciseCard";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Save, FolderOpen, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { SaveWorkoutDialog } from "./SaveWorkoutDialog";
+import { Separator } from "@/components/ui/separator";
 
 interface WorkoutEditorProps {
   initialSettings: WorkoutSettings;
@@ -17,9 +19,25 @@ export const WorkoutEditor: React.FC<WorkoutEditorProps> = ({
   initialSettings,
   onSave,
 }) => {
-  const [workoutName, setWorkoutName] = useState(initialSettings.name);
-  const [exercises, setExercises] = useState<Exercise[]>(initialSettings.exercises);
+  const {
+    settings, // Get current settings from hook
+    setSettings, // Use hook's setSettings
+    savedWorkouts,
+    saveWorkoutAs,
+    loadSavedWorkout,
+    deleteSavedWorkout,
+  } = useWorkoutTimer(); // Use the hook directly to manage state
+
+  const [workoutName, setWorkoutName] = useState(settings.name);
+  const [exercises, setExercises] = useState<Exercise[]>(settings.exercises);
   const [editingExerciseId, setEditingExerciseId] = useState<string | null>(null);
+  const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
+
+  // Update local state when settings from hook change (e.g., after loading a workout)
+  React.useEffect(() => {
+    setWorkoutName(settings.name);
+    setExercises(settings.exercises);
+  }, [settings]);
 
   const handleAddExercise = () => {
     const newId = `ex-${Date.now()}`;
@@ -59,26 +77,31 @@ export const WorkoutEditor: React.FC<WorkoutEditorProps> = ({
     setEditingExerciseId(null);
   };
 
-  const handleSaveWorkout = () => {
+  const handleApplyWorkoutSettings = () => {
     if (exercises.length === 0) {
-      toast.error("Please add at least one exercise to save the workout.");
+      toast.error("Please add at least one exercise to apply the workout.");
       return;
     }
-    onSave({ name: workoutName, exercises });
-    toast.success("Workout configuration saved!");
+    const newSettings = { name: workoutName, exercises };
+    setSettings(newSettings); // Update the global settings via the hook
+    onSave(newSettings); // Notify parent (WorkoutTimer) to close config
+    toast.success("Workout configuration applied!");
   };
 
-  const moveExercise = (id: string, direction: 'up' | 'down') => {
-    const index = exercises.findIndex(ex => ex.id === id);
-    if (index === -1) return;
-
-    const newExercises = [...exercises];
-    if (direction === 'up' && index > 0) {
-      [newExercises[index - 1], newExercises[index]] = [newExercises[index], newExercises[index - 1]];
-    } else if (direction === 'down' && index < newExercises.length - 1) {
-      [newExercises[index + 1], newExercises[index]] = [newExercises[index], newExercises[index + 1]];
+  const handleSaveCurrentWorkout = (name: string) => {
+    if (exercises.length === 0) {
+      toast.error("Cannot save an empty workout. Please add at least one exercise.");
+      return;
     }
-    setExercises(newExercises);
+    saveWorkoutAs({ name, exercises });
+  };
+
+  const handleLoadWorkout = (name: string) => {
+    loadSavedWorkout(name);
+  };
+
+  const handleDeleteSavedWorkout = (name: string) => {
+    deleteSavedWorkout(name);
   };
 
   const editingEx = editingExerciseId
@@ -101,7 +124,17 @@ export const WorkoutEditor: React.FC<WorkoutEditorProps> = ({
         />
       </div>
 
-      <h3 className="text-xl font-semibold text-foreground mt-6 mb-4">Exercises</h3>
+      <Button
+        onClick={() => setIsSaveDialogOpen(true)}
+        className="w-full bg-blue-600 text-white hover:bg-blue-700 flex items-center justify-center space-x-2"
+      >
+        <Save size={20} />
+        <span>Save Current Workout</span>
+      </Button>
+
+      <Separator className="my-6" />
+
+      <h3 className="text-xl font-semibold text-foreground mb-4">Exercises</h3>
       {exercises.length === 0 && (
         <p className="text-muted-foreground text-center">No exercises added yet. Click "Add Exercise" to begin!</p>
       )}
@@ -144,11 +177,53 @@ export const WorkoutEditor: React.FC<WorkoutEditorProps> = ({
       )}
 
       <Button
-        onClick={handleSaveWorkout}
+        onClick={handleApplyWorkoutSettings}
         className="w-full bg-primary text-primary-foreground hover:bg-primary/90 mt-6"
       >
         Apply Workout Settings
       </Button>
+
+      <Separator className="my-6" />
+
+      <h3 className="text-xl font-semibold text-foreground mb-4">Saved Workouts</h3>
+      {savedWorkouts.length === 0 ? (
+        <p className="text-muted-foreground text-center">No saved workouts yet. Save your current workout to see it here!</p>
+      ) : (
+        <div className="space-y-3">
+          {savedWorkouts.map((workout) => (
+            <div key={workout.name} className="flex items-center justify-between bg-muted p-3 rounded-md">
+              <span className="font-medium text-foreground">{workout.name}</span>
+              <div className="flex space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleLoadWorkout(workout.name)}
+                  className="flex items-center space-x-1"
+                >
+                  <FolderOpen size={16} />
+                  <span>Load</span>
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handleDeleteSavedWorkout(workout.name)}
+                  className="flex items-center space-x-1"
+                >
+                  <Trash2 size={16} />
+                  <span>Delete</span>
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <SaveWorkoutDialog
+        isOpen={isSaveDialogOpen}
+        onClose={() => setIsSaveDialogOpen(false)}
+        onSave={handleSaveCurrentWorkout}
+        initialName={workoutName}
+      />
     </div>
   );
 };
