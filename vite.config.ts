@@ -14,4 +14,5 @@ export default defineConfig(() => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  base: "/<REPO_NAME>/", // IMPORTANT: Replace <REPO_NAME> with your actual GitHub repository name
 }));
