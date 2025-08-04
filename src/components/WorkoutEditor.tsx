@@ -13,7 +13,7 @@ interface WorkoutEditorProps {
   initialSettings: WorkoutSettings;
   onSave: (settings: WorkoutSettings) => void;
   savedWorkouts: WorkoutSettings[];
-  onSaveCurrentWorkout: (name: string) => void;
+  onSaveCurrentWorkout: (name: string, exercises: Exercise[]) => void;
   onLoadWorkout: (id: string) => void;
   onDeleteWorkout: (id: string) => void;
 }
@@ -190,7 +190,7 @@ export const WorkoutEditor: React.FC<WorkoutEditorProps> = ({
           savedWorkouts={savedWorkouts}
           onLoadWorkout={onLoadWorkout}
           onDeleteWorkout={onDeleteWorkout}
-          onSaveCurrentWorkout={onSaveCurrentWorkout}
+          onSaveCurrentWorkout={(name) => onSaveCurrentWorkout(name, exercises)}
           currentWorkoutName={workoutName}
         />
       )}

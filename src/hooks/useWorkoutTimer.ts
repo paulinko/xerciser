@@ -284,15 +284,15 @@ export const useWorkoutTimer = () => {
   }, [state.settings.exercises]);
 
   // New functions for managing saved workouts
-  const saveWorkout = useCallback((workoutName: string) => {
-    if (state.settings.exercises.length === 0) {
+  const saveWorkout = useCallback((workoutName: string, exercisesToSave: Exercise[]) => {
+    if (exercisesToSave.length === 0) {
       toast.error("Cannot save an empty workout. Please add at least one exercise.");
       return;
     }
     const newWorkout: WorkoutSettings = {
-      ...state.settings,
       id: `workout-${Date.now()}`, // Ensure unique ID for saved workouts
       name: workoutName,
+      exercises: exercisesToSave, // Use exercisesToSave here
     };
     setState(prevState => {
       // Use a Map to ensure uniqueness and prioritize the newly saved workout
@@ -304,7 +304,7 @@ export const useWorkoutTimer = () => {
       return { ...prevState, savedWorkouts: updatedWorkouts };
     });
     toast.success(`Workout "${workoutName}" saved!`);
-  }, [state.settings]);
+  }, []);
 
   const loadWorkout = useCallback((workoutId: string) => {
     const workoutToLoad = state.savedWorkouts.find(w => w.id === workoutId);
