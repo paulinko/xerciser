@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Play, Pause, RotateCcw, SkipForward, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
-// Removed Link import as it's no longer needed here
 
 const WorkoutTimer: React.FC = () => {
   const {
@@ -60,15 +59,8 @@ const WorkoutTimer: React.FC = () => {
     ? "text-red-500"
     : "text-blue-500";
 
-  const workoutBackgroundClass = isWorking
-    ? "bg-red-500"
-    : "bg-blue-500";
-
   return (
-    <div className={cn(
-      "flex flex-col items-center justify-center min-h-screen p-4 transition-colors duration-500",
-      workoutBackgroundClass
-    )}>
+    <div className="flex flex-col items-center justify-center w-full h-full">
       <Card className="w-full max-w-md mx-auto shadow-lg rounded-xl overflow-hidden">
         <CardHeader className="bg-primary text-primary-foreground py-4">
           <CardTitle className="text-3xl font-extrabold text-center">
@@ -149,7 +141,7 @@ const WorkoutTimer: React.FC = () => {
                 >
                   <RotateCcw size={24} />
                   <span>Reset</span>
-                </Button>
+                  </Button>
               </div>
               <div className="flex justify-center mt-4">
                 <Button
@@ -169,7 +161,6 @@ const WorkoutTimer: React.FC = () => {
                   <Settings size={20} />
                   <span>Change Workout Configuration</span>
                 </Button>
-                {/* Credits link removed from here */}
               </div>
             </>
           )}
