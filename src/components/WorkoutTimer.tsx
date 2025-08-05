@@ -42,6 +42,14 @@ const WorkoutTimer: React.FC = () => {
     start();
   };
 
+  // Function to toggle config visibility and reset workout if active
+  const toggleConfigVisibility = () => {
+    if (!showConfig && isActive) { // If currently showing timer and workout is active
+      reset(); // Reset the workout
+    }
+    setShowConfig(!showConfig);
+  };
+
   const totalPhaseDuration = currentPhase === 'work'
     ? currentExercise?.workDuration || 0
     : currentPhase === 'rest'
@@ -184,7 +192,7 @@ const WorkoutTimer: React.FC = () => {
               </div>
               <div className="flex justify-center mt-4">
                 <Button
-                  onClick={() => setShowConfig(true)}
+                  onClick={toggleConfigVisibility} // Use the new toggle function
                   variant="link"
                   className="text-muted-foreground hover:text-foreground flex items-center justify-center space-x-2"
                 >
