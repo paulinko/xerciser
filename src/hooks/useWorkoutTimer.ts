@@ -70,11 +70,6 @@ export const useWorkoutTimer = () => {
     let savedWorkoutsFromLS: WorkoutSettings[] = [];
     let isSpeechEnabledFromLS = true;
 
-    if (navigator.storage && navigator.storage.persist) {
-      const isPersisted = await navigator.storage.persist();
-      console.log(`Persisted storage granted: ${isPersisted}`);
-    }
-
     if (typeof window !== 'undefined') {
       const storedAllWorkouts = localStorage.getItem(ALL_WORKOUTS_KEY);
       if (storedAllWorkouts) {
