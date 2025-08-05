@@ -16,5 +16,18 @@ if ('serviceWorker' in navigator) {
       .catch(error => {
         console.error('Service Worker registration failed:', error);
       });
+
+    // Request persistent storage for the PWA
+    if (navigator.storage && navigator.storage.persist) {
+      navigator.storage.persist().then(persistent => {
+        if (persistent) {
+          console.log("Storage will not be cleared except by user action.");
+        } else {
+          console.log("Storage may be cleared by the browser under storage pressure.");
+        }
+      }).catch(error => {
+        console.error("Failed to request persistent storage:", error);
+      });
+    }
   });
 }
