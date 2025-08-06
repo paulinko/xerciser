@@ -367,8 +367,7 @@ export const useWorkoutTimer = () => {
       return { ...prevState, savedWorkouts: updatedWorkouts };
     });
     toast.success("Workout deleted.");
-    speak("Workout deleted.");
-  }, [speak]);
+  }, []);
 
   const toggleSpeech = useCallback(() => {
     setState(prevState => {
