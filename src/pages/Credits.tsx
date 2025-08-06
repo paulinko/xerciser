@@ -3,19 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 
-// Declare global variables for TypeScript
-declare const __APP_VERSION__: string;
-declare const __BUILD_TIME__: string;
-
 const Credits = () => {
-  const buildDate = new Date(__BUILD_TIME__).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
       <div className="w-full max-w-md mx-auto bg-card text-card-foreground p-6 rounded-lg shadow-lg">
@@ -100,11 +88,6 @@ const Credits = () => {
             GitHub
           </a>
         </p>
-
-        <div className="text-center text-sm text-muted-foreground mt-4">
-          <p>Version: {__APP_VERSION__}</p>
-          <p>Built on: {buildDate}</p>
-        </div>
 
         <div className="mt-8 text-center">
           <Link to="/">

@@ -3,7 +3,6 @@ import { useCallback, useEffect, useState } from 'react';
 export function useSpeechSynthesis() {
   const [synth, setSynth] = useState<SpeechSynthesis | null>(null);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
@@ -13,9 +12,6 @@ export function useSpeechSynthesis() {
       const loadVoices = () => {
         const availableVoices = currentSynth.getVoices();
         setVoices(availableVoices);
-        if (availableVoices.length > 0) {
-          setIsReady(true); // Mark as ready once voices are loaded
-        }
       };
 
       // Load voices immediately if they are already available
@@ -32,21 +28,8 @@ export function useSpeechSynthesis() {
     }
   }, []);
 
-  // Function to attempt to activate speech synthesis with a user gesture
-  const requestSpeechPermission = useCallback(() => {
-    if (synth && !synth.speaking && isReady) {
-      const utterance = new SpeechSynthesisUtterance(""); // Silent utterance
-      utterance.volume = 0; // Make it truly silent
-      synth.speak(utterance);
-      // Immediately cancel to not block other speech
-      synth.cancel();
-    }
-  }, [synth, isReady]);
-
   const speak = useCallback((text: string, lang: string = 'en-US') => {
-    if (synth && isReady && text) { // Ensure synth is ready
-      // Cancel any ongoing speech to prevent queuing issues, especially on mobile
-      synth.cancel(); 
+    if (synth && text) {
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = lang;
 
@@ -59,10 +42,8 @@ export function useSpeechSynthesis() {
       }
 
       synth.speak(utterance);
-    } else if (!isReady) {
-      console.warn("Speech synthesis not ready. Voices might not be loaded yet.");
     }
-  }, [synth, voices, isReady]); // Add isReady to dependencies
+  }, [synth, voices]);
 
-  return { speak, isSupported: !!synth, isReady, requestSpeechPermission }; // Expose requestSpeechPermission
+  return { speak, isSupported: !!synth };
 }
