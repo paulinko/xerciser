@@ -32,6 +32,17 @@ export function useSpeechSynthesis() {
     }
   }, []);
 
+  // Function to attempt to activate speech synthesis with a user gesture
+  const requestSpeechPermission = useCallback(() => {
+    if (synth && !synth.speaking && isReady) {
+      const utterance = new SpeechSynthesisUtterance(""); // Silent utterance
+      utterance.volume = 0; // Make it truly silent
+      synth.speak(utterance);
+      // Immediately cancel to not block other speech
+      synth.cancel();
+    }
+  }, [synth, isReady]);
+
   const speak = useCallback((text: string, lang: string = 'en-US') => {
     if (synth && isReady && text) { // Ensure synth is ready
       // Cancel any ongoing speech to prevent queuing issues, especially on mobile
@@ -53,5 +64,5 @@ export function useSpeechSynthesis() {
     }
   }, [synth, voices, isReady]); // Add isReady to dependencies
 
-  return { speak, isSupported: !!synth, isReady }; // Expose isReady
+  return { speak, isSupported: !!synth, isReady, requestSpeechPermission }; // Expose requestSpeechPermission
 }

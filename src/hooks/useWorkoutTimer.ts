@@ -46,7 +46,7 @@ const ALL_WORKOUTS_KEY = 'allWorkouts';
 const SPEECH_ENABLED_KEY = 'isSpeechEnabled';
 
 export const useWorkoutTimer = () => {
-  const { speak: rawSpeak, isReady: speechSynthReady } = useSpeechSynthesis();
+  const { speak: rawSpeak, isReady: speechSynthReady, requestSpeechPermission } = useSpeechSynthesis();
   const { currentStreak, workoutHistory, recordWorkoutCompletion } = useWorkoutStreak();
 
   const calculateTotalDuration = useCallback((settings: WorkoutSettings) => {
@@ -185,6 +185,10 @@ export const useWorkoutTimer = () => {
       toast.error("No exercises configured to start the workout.");
       return;
     }
+
+    // Attempt to request speech permission with the user's click
+    requestSpeechPermission();
+
     if (!state.isActive) {
       setState(prevState => ({
         ...prevState,
@@ -209,7 +213,7 @@ export const useWorkoutTimer = () => {
       toast.info("Workout resumed!");
       // No announcement for "Workout resumed."
     }
-  }, [state.isActive, state.isPaused, state.currentPhase, currentExercise, state.settings.name, speak, state.currentExerciseSet, state.settings.restBetweenWorkoutSets]);
+  }, [state.isActive, state.isPaused, state.currentPhase, currentExercise, state.settings.name, speak, state.currentExerciseSet, state.settings.restBetweenWorkoutSets, requestSpeechPermission]);
 
   const pause = useCallback(() => {
     if (state.isActive && !state.isPaused) {
@@ -371,7 +375,7 @@ export const useWorkoutTimer = () => {
       const newState = { ...prevState, isSpeechEnabled: !prevState.isSpeechEnabled };
       if (newState.isSpeechEnabled) {
         toast.info("Speech announcements enabled.");
-        rawSpeak("Speech announcements enabled.");
+        rawSpeak("Speech announcements enabled."); // Use rawSpeak here to ensure it tries to speak
       } else {
         toast.info("Speech announcements disabled.");
         // No rawSpeak for disabled, as it would be immediately silenced
