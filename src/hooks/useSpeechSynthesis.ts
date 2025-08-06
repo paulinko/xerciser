@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 export function useSpeechSynthesis() {
   const [synth, setSynth] = useState<SpeechSynthesis | null>(null);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
@@ -12,6 +13,9 @@ export function useSpeechSynthesis() {
       const loadVoices = () => {
         const availableVoices = currentSynth.getVoices();
         setVoices(availableVoices);
+        if (availableVoices.length > 0) {
+          setIsReady(true); // Mark as ready once voices are loaded
+        }
       };
 
       // Load voices immediately if they are already available
@@ -29,7 +33,9 @@ export function useSpeechSynthesis() {
   }, []);
 
   const speak = useCallback((text: string, lang: string = 'en-US') => {
-    if (synth && text) {
+    if (synth && isReady && text) { // Ensure synth is ready
+      // Cancel any ongoing speech to prevent queuing issues, especially on mobile
+      synth.cancel(); 
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = lang;
 
@@ -42,8 +48,10 @@ export function useSpeechSynthesis() {
       }
 
       synth.speak(utterance);
+    } else if (!isReady) {
+      console.warn("Speech synthesis not ready. Voices might not be loaded yet.");
     }
-  }, [synth, voices]);
+  }, [synth, voices, isReady]); // Add isReady to dependencies
 
-  return { speak, isSupported: !!synth };
+  return { speak, isSupported: !!synth, isReady }; // Expose isReady
 }

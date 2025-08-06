@@ -46,7 +46,7 @@ const ALL_WORKOUTS_KEY = 'allWorkouts';
 const SPEECH_ENABLED_KEY = 'isSpeechEnabled';
 
 export const useWorkoutTimer = () => {
-  const { speak: rawSpeak } = useSpeechSynthesis();
+  const { speak: rawSpeak, isReady: speechSynthReady } = useSpeechSynthesis();
   const { currentStreak, workoutHistory, recordWorkoutCompletion } = useWorkoutStreak();
 
   const calculateTotalDuration = useCallback((settings: WorkoutSettings) => {
@@ -153,10 +153,10 @@ export const useWorkoutTimer = () => {
   const currentExercise = state.settings.exercises[state.currentExerciseIndex];
 
   const speak = useCallback((text: string, lang: string = 'en-US') => {
-    if (state.isSpeechEnabled) {
+    if (state.isSpeechEnabled && speechSynthReady) {
       rawSpeak(text, lang);
     }
-  }, [state.isSpeechEnabled, rawSpeak]);
+  }, [state.isSpeechEnabled, speechSynthReady, rawSpeak]);
 
   const workStartSound = useRef(typeof Audio !== 'undefined' ? new Audio(`${import.meta.env.BASE_URL}sounds/work_start.mp3`) : null);
   const restStartSound = useRef(typeof Audio !== 'undefined' ? new Audio(`${import.meta.env.BASE_URL}sounds/rest_start.mp3`) : null);
