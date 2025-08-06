@@ -3,7 +3,7 @@ import { useWorkoutTimer } from "@/hooks/useWorkoutTimer";
 import { WorkoutEditor } from "./WorkoutEditor";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Play, Pause, RotateCcw, SkipForward, Settings } from "lucide-react";
+import { Play, Pause, RotateCcw, SkipForward, Settings, Volume2, VolumeX } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { CustomProgressBar } from "./CustomProgressBar";
@@ -32,6 +32,8 @@ const WorkoutTimer: React.FC = () => {
     deleteWorkout,
     currentStreak,
     workoutHistory,
+    isSpeechEnabled, // Get speech state
+    toggleSpeech, // Get speech toggle function
   } = useWorkoutTimer();
 
   const [showConfig, setShowConfig] = useState(true);
@@ -86,14 +88,25 @@ const WorkoutTimer: React.FC = () => {
           <CardTitle className="text-3xl font-extrabold flex-1">
             Xercise
           </CardTitle>
-          <Link to="/credits">
+          <div className="flex items-center space-x-2">
             <Button
-              variant="link"
-              className="text-primary-foreground hover:text-primary-foreground/80 text-sm"
+              variant="ghost"
+              size="icon"
+              onClick={toggleSpeech}
+              className="text-primary-foreground hover:bg-primary/80"
+              title={isSpeechEnabled ? "Disable Speech" : "Enable Speech"}
             >
-              Credits
+              {isSpeechEnabled ? <Volume2 size={20} /> : <VolumeX size={20} />}
             </Button>
-          </Link>
+            <Link to="/credits">
+              <Button
+                variant="link"
+                className="text-primary-foreground hover:text-primary-foreground/80 text-sm"
+              >
+                Credits
+              </Button>
+            </Link>
+          </div>
         </CardHeader>
         <CardContent className="p-6 space-y-6">
           {showConfig ? (

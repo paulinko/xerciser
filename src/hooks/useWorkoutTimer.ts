@@ -152,7 +152,7 @@ export const useWorkoutTimer = () => {
 
   const currentExercise = state.settings.exercises[state.currentExerciseIndex];
 
-  const speak = useCallback((text: string, lang?: string) => {
+  const speak = useCallback((text: string, lang: string = 'en-US') => {
     if (state.isSpeechEnabled) {
       rawSpeak(text, lang);
     }
@@ -198,28 +198,26 @@ export const useWorkoutTimer = () => {
       toast.success(`Workout "${state.settings.name}" started!`);
       if (state.currentPhase === 'work') {
         workStartSound.current?.play();
-        speak(`Workout set ${state.currentWorkoutSet}. First exercise: ${currentExercise.name}, set ${state.currentExerciseSet}.`);
+        speak(`${currentExercise.name}, set ${state.currentExerciseSet}.`);
       } else if (state.currentPhase === 'rest') {
         restStartSound.current?.play();
         speak(`Rest for ${currentExercise.name}, set ${state.currentExerciseSet}.`);
-      } else if (state.currentPhase === 'between_workout_rest') {
-        restStartSound.current?.play();
-        speak(`Rest before workout set ${state.currentWorkoutSet + 1}.`);
       }
+      // No announcement for 'between_workout_rest' on start
     } else if (state.isPaused) {
       setState(prevState => ({ ...prevState, isPaused: false }));
       toast.info("Workout resumed!");
-      speak("Workout resumed.");
+      // No announcement for "Workout resumed."
     }
-  }, [state.isActive, state.isPaused, state.currentPhase, currentExercise, state.settings.name, speak, state.currentExerciseSet, state.currentWorkoutSet, state.settings.restBetweenWorkoutSets]);
+  }, [state.isActive, state.isPaused, state.currentPhase, currentExercise, state.settings.name, speak, state.currentExerciseSet, state.settings.restBetweenWorkoutSets]);
 
   const pause = useCallback(() => {
     if (state.isActive && !state.isPaused) {
       setState(prevState => ({ ...prevState, isPaused: true }));
       toast.info("Workout paused.");
-      speak("Workout paused.");
+      // No announcement for "Workout paused."
     }
-  }, [state.isActive, state.isPaused, speak]);
+  }, [state.isActive, state.isPaused]);
 
   const reset = useCallback(() => {
     if (intervalRef.current) {
@@ -238,8 +236,8 @@ export const useWorkoutTimer = () => {
       currentTime: firstExercise ? firstExercise.workDuration : 0,
     }));
     setElapsedWorkoutTime(0);
-    speak("Workout reset.");
-  }, [state.settings, speak]);
+    // No announcement for "Workout reset."
+  }, [state.settings]);
 
   const skip = useCallback(() => {
     setState(prevState => {
@@ -260,7 +258,7 @@ export const useWorkoutTimer = () => {
         if (prevState.currentExerciseSet < currentEx.sets) {
           nextState.currentPhase = 'rest';
           nextState.currentTime = currentEx.restDuration;
-          announcement = `Skipped to Rest for ${currentEx.name}, Set ${nextState.currentExerciseSet}.`;
+          announcement = `Rest for ${currentEx.name}, Set ${nextState.currentExerciseSet}.`;
           restStartSound.current?.play();
         } else {
           const nextExerciseIndex = prevState.currentExerciseIndex + 1;
@@ -276,7 +274,7 @@ export const useWorkoutTimer = () => {
             if (prevState.currentWorkoutSet < prevState.settings.exerciseSets) {
               nextState.currentPhase = 'between_workout_rest';
               nextState.currentTime = prevState.settings.restBetweenWorkoutSets;
-              announcement = `Skipped to Rest before Workout Set ${prevState.currentWorkoutSet + 1}.`;
+              // No announcement for "Skipped to Rest before Workout Set X+1."
               restStartSound.current?.play();
             } else {
               workoutFinished = true;
@@ -289,7 +287,7 @@ export const useWorkoutTimer = () => {
         nextState.currentExerciseSet++;
         nextState.currentPhase = 'work';
         nextState.currentTime = currentEx.workDuration;
-        announcement = `Skipped to ${currentEx.name}, Set ${nextState.currentExerciseSet}.`;
+        announcement = `${currentEx.name}, Set ${nextState.currentExerciseSet}.`;
         workStartSound.current?.play();
       } else if (prevState.currentPhase === 'between_workout_rest') {
         nextState.currentWorkoutSet++;
@@ -298,12 +296,11 @@ export const useWorkoutTimer = () => {
         nextState.currentPhase = 'work';
         const firstExerciseOfNextWorkoutSet = prevState.settings.exercises[0];
         nextState.currentTime = firstExerciseOfNextWorkoutSet ? firstExerciseOfNextWorkoutSet.workDuration : 0;
-        announcement = `Skipped to Workout Set ${nextState.currentWorkoutSet}. First exercise: ${firstExerciseOfNextWorkoutSet.name}, set 1.`;
+        announcement = `${firstExerciseOfNextWorkoutSet.name}, set 1.`;
         workStartSound.current?.play();
       }
 
       if (announcement) {
-        toast.info(announcement);
         speak(announcement);
       }
 
@@ -347,19 +344,19 @@ export const useWorkoutTimer = () => {
       return { ...prevState, savedWorkouts: updatedWorkouts };
     });
     toast.success(`Workout "${workoutName}" saved!`);
-    speak(`Workout "${workoutName}" saved.`);
-  }, [speak]);
+    // No announcement for "Workout saved."
+  }, []);
 
   const loadWorkout = useCallback((workoutId: string) => {
     const workoutToLoad = state.savedWorkouts.find(w => w.id === workoutId);
     if (workoutToLoad) {
       setSettings(workoutToLoad);
       toast.success(`Workout "${workoutToLoad.name}" loaded!`);
-      speak(`Workout "${workoutToLoad.name}" loaded.`);
+      // No announcement for "Workout loaded."
     } else {
       toast.error("Workout not found.");
     }
-  }, [state.savedWorkouts, setSettings, speak]);
+  }, [state.savedWorkouts, setSettings]);
 
   const deleteWorkout = useCallback((workoutId: string) => {
     setState(prevState => {
@@ -377,7 +374,7 @@ export const useWorkoutTimer = () => {
         rawSpeak("Speech announcements enabled.");
       } else {
         toast.info("Speech announcements disabled.");
-        rawSpeak("Speech announcements disabled.");
+        // No rawSpeak for disabled, as it would be immediately silenced
       }
       return newState;
     });
@@ -463,7 +460,7 @@ export const useWorkoutTimer = () => {
                   if (prevState.currentWorkoutSet < prevState.settings.exerciseSets) {
                     toast.info(`Workout Set ${prevState.currentWorkoutSet} complete! Rest before next workout set.`);
                     restStartSound.current?.play();
-                    speak(`Rest before workout set ${prevState.currentWorkoutSet + 1}.`);
+                    // No announcement for "Rest before workout set X+1."
                     return {
                       ...prevState,
                       currentPhase: 'between_workout_rest',
@@ -495,7 +492,7 @@ export const useWorkoutTimer = () => {
             } else if (prevState.currentPhase === 'rest') {
               toast.info(`Rest complete! Starting Set ${prevState.currentExerciseSet + 1} of ${currentEx.name}.`);
               workStartSound.current?.play();
-              speak(`Set ${prevState.currentExerciseSet + 1} of ${currentEx.name}.`);
+              speak(`${currentEx.name}, Set ${prevState.currentExerciseSet + 1}.`);
               return {
                 ...prevState,
                 currentExerciseSet: prevState.currentExerciseSet + 1,
@@ -507,7 +504,7 @@ export const useWorkoutTimer = () => {
               const firstExerciseOfNextWorkoutSet = prevState.settings.exercises[0];
               toast.info(`Starting Workout Set ${nextWorkoutSet}!`);
               workStartSound.current?.play();
-              speak(`Starting workout set ${nextWorkoutSet}. First exercise: ${firstExerciseOfNextWorkoutSet.name}, set 1.`);
+              speak(`${firstExerciseOfNextWorkoutSet.name}, set 1.`);
               return {
                 ...prevState,
                 currentWorkoutSet: nextWorkoutSet,
