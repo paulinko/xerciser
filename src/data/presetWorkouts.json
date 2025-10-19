@@ -1,25 +1,15 @@
 [
   {
-    "id": "preset-full-body-beginner",
-    "name": "Beginner Full Body",
-    "exercises": [
-      { "id": "preset-ex-1-1", "name": "Jumping Jacks", "sets": 2, "workDuration": 45, "restDuration": 15 },
-      { "id": "preset-ex-1-2", "name": "Squats", "sets": 3, "workDuration": 60, "restDuration": 30 },
-      { "id": "preset-ex-1-3", "name": "Push-ups", "sets": 3, "workDuration": 45, "restDuration": 30 },
-      { "id": "preset-ex-1-4", "name": "Plank", "sets": 2, "workDuration": 60, "restDuration": 20 }
-    ]
-  },
-  {
     "id": "preset-arm-strong",
     "name": "Arm strength",
     "exerciseSets": 3,
     "restBetweenWorkoutSets": 30,
     "exercises": [
-      { "id": "preset-ex-2-1", "name": "Shoulder pulses", "sets": 1, "workDuration": 30, "restDuration": 10 },
-      { "id": "preset-ex-2-2", "name": "Push-UPs", "sets": 1, "workDuration": 30, "restDuration": 20 },
-      { "id": "preset-ex-2-3", "name": " Superman Exercise", "sets": 1, "workDuration": 30, "restDuration": 10 },
-      { "id": "preset-ex-2-4", "name": "Up-Down Plank", "sets": 1, "workDuration": 30, "restDuration": 20 },
-      { "id": "preset-ex-2-5", "name": "Triceps Reverse Dips", "sets": 1, "workDuration": 30, "restDuration": 20 }
+      { "id": "preset-ex-2-1", "name": "Shoulder pulses", "sets": 1, "workDuration": 33, "restDuration": 10 },
+      { "id": "preset-ex-2-2", "name": "Push-UPs", "sets": 1, "workDuration": 33, "restDuration": 20 },
+      { "id": "preset-ex-2-3", "name": " Superman Exercise", "sets": 1, "workDuration": 33, "restDuration": 10 },
+      { "id": "preset-ex-2-4", "name": "Up-Down Plank", "sets": 1, "workDuration": 33, "restDuration": 20 },
+      { "id": "preset-ex-2-5", "name": "Triceps Reverse Dips", "sets": 1, "workDuration": 33, "restDuration": 20 }
     ]
   },
   {
@@ -28,10 +18,10 @@
     "exercises": [
       { "id": "preset-ex-4-1", "name": "Squats", "sets": 3, "workDuration": 60, "restDuration": 15 },
       { "id": "preset-ex-4-2", "name": "Standing Cross Crunches", "sets": 1, "workDuration": 180, "restDuration": 10 },
-      { "id": "preset-ex-4-3", "name": "Bird Dog", "sets": 4, "workDuration": 60, "restDuration": 20 },
+      { "id": "preset-ex-4-3", "name": "Bird Dog", "sets": 4, "workDuration": 75, "restDuration": 20 },
       { "id": "preset-ex-4-4", "name": "Shoulder Bridge", "sets": 3, "workDuration": 60, "restDuration": 20 },
-      { "id": "preset-ex-4-5", "name": "Bicycle Crunch", "sets": 3, "workDuration": 60, "restDuration": 20 },
-      { "id": "preset-ex-4-6", "name": "Plank", "sets": 1, "workDuration": 75, "restDuration": 20 },
+      { "id": "preset-ex-4-5", "name": "Bicycle Crunch", "sets": 3, "workDuration": 75, "restDuration": 20 },
+      { "id": "preset-ex-4-6", "name": "Plank", "sets": 1, "workDuration": 80, "restDuration": 20 },
       { "id": "preset-ex-4-7", "name": "Side Plank", "sets": 2, "workDuration": 120, "restDuration": 20 }
     ]
   }
